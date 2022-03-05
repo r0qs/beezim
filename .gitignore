@@ -1,0 +1,8 @@
+# Build directory
+dist
+.env
+
+# dev
+data_root
+output
+notes
