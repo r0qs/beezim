@@ -19,7 +19,6 @@ import (
 	"swiki/internal/tarball"
 
 	"github.com/ethersphere/bee/pkg/swarm"
-	"golang.org/x/crypto/sha3"
 )
 
 type BeeClient struct {
@@ -88,7 +87,7 @@ func (c *BeeClient) UploadBytes(ctx context.Context, data io.Reader, o api.Uploa
 
 // UploadCollection uploads TAR collection bytes to the node
 func (c *BeeClient) UploadCollection(ctx context.Context, f *tarball.File, o api.UploadCollectionOptions) (err error) {
-	h := sha3.New256()
+	h := tarball.FileHasher()
 	r, err := c.api.Dirs.Upload(ctx, io.TeeReader(f.DataReader(), h), f.Size(), o)
 	if err != nil {
 		return fmt.Errorf("upload collection: %w", err)
@@ -106,7 +105,7 @@ func (c *BeeClient) DownloadManifestFile(ctx context.Context, addr swarm.Address
 		return 0, nil, fmt.Errorf("download manifest file %s: %w", path, err)
 	}
 
-	h := sha3.New256()
+	h := tarball.FileHasher()
 	size, err = io.Copy(h, r)
 	if err != nil {
 		return 0, nil, fmt.Errorf("download manifest file %s: %w", path, err)

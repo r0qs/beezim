@@ -8,9 +8,11 @@ package tarball
 
 import (
 	"bytes"
+	"hash"
 	"io"
 
 	"github.com/ethersphere/bee/pkg/swarm"
+	"golang.org/x/crypto/sha3"
 )
 
 // File represents Bee file
@@ -29,6 +31,25 @@ func NewBufferFile(name string, buffer *bytes.Buffer) *File {
 		dataReader: buffer,
 		size:       int64(buffer.Len()),
 	}
+}
+
+// CalculateHash calculates hash from dataReader.
+// It replaces dataReader with another that will contain the data.
+func (f *File) CalculateHash() error {
+	h := FileHasher()
+
+	var buf bytes.Buffer
+	tee := io.TeeReader(f.DataReader(), &buf)
+
+	_, err := io.Copy(h, tee)
+	if err != nil {
+		return err
+	}
+
+	f.hash = h.Sum(nil)
+	f.dataReader = &buf
+
+	return nil
 }
 
 // Address returns file's address
@@ -62,4 +83,8 @@ func (f *File) SetAddress(a swarm.Address) {
 
 func (f *File) SetHash(h []byte) {
 	f.hash = h
+}
+
+func FileHasher() hash.Hash {
+	return sha3.New256()
 }

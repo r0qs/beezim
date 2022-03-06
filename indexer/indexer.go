@@ -3,20 +3,21 @@ package indexer
 import (
 	"archive/tar"
 	"bytes"
+	"context"
 	"embed"
 	"fmt"
+	"html/template"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strconv"
 	"swiki/internal/tarball"
-	"text/template"
+	"sync"
 	"time"
 
 	zim "github.com/akhenakh/gozim"
 	"github.com/cheggaaa/pb/v3"
-	"github.com/ethersphere/bee/pkg/manifest/simple"
 	"github.com/ethersphere/bee/pkg/swarm"
 )
 
@@ -31,7 +32,6 @@ type Article struct {
 	title    string
 	data     []byte
 	mimeType string
-	metadata map[string]string
 }
 
 func (a Article) Path() string {
@@ -42,26 +42,24 @@ func (a Article) Data() []byte {
 	return a.Data()
 }
 
-func (a Article) Metadata() map[string]string {
-	return a.metadata
-}
-
 type SwarmWikiIndexer struct {
+	mu        sync.Mutex
 	outputDir string
 	ZimPath   string
 	Z         *zim.ZimReader
-	m         simple.Manifest
+	m         map[string]ManifestEntry // TODO: replace by a real swarm manifest?
+	uploaded  string                   // TODO: hash of the root manifest metadata (if empty, not uploaded)
 	templates *template.Template
 }
 
+// ManifestEntry abstract a swarm manifest entry for a local
 type ManifestEntry struct {
-	Reference swarm.Address
+	Reference string
 	Path      string
-	Metadata  map[string]string
+	Metadata  map[string]string // TODO: define all metadata entries
 }
 
 func New(zimPath string, outputDir string) (*SwarmWikiIndexer, error) {
-	// TODO: load assets for the searcher
 	// load base templates
 	templates, err := template.ParseFS(templateFS, "templates/*.html")
 	if err != nil {
@@ -77,21 +75,28 @@ func New(zimPath string, outputDir string) (*SwarmWikiIndexer, error) {
 		outputDir: outputDir,
 		ZimPath:   zimPath,
 		Z:         z,
-		m:         simple.NewManifest(),
+		m:         make(map[string]ManifestEntry),
 		templates: templates,
 	}, nil
 }
 
 func (idx *SwarmWikiIndexer) AddEntry(entry ManifestEntry) {
-	idx.m.Add(entry.Path, entry.Reference.String(), entry.Metadata)
+	idx.mu.Lock()
+	defer idx.mu.Unlock()
+
+	idx.m[entry.Path] = ManifestEntry{
+		Reference: entry.Reference,
+		Path:      entry.Path,
+		Metadata:  entry.Metadata,
+	}
 }
 
-func (idx *SwarmWikiIndexer) Manifest() simple.Manifest {
+func (idx *SwarmWikiIndexer) Manifest() map[string]ManifestEntry {
 	return idx.m
 }
 
-func (idx *SwarmWikiIndexer) ParseZIM() chan *Article {
-	zimArticles := make(chan *Article)
+func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
+	zimArticles := make(chan Article)
 	go func() {
 		defer close(zimArticles)
 		progressBar := pb.New(int(idx.Z.ArticleCount))
@@ -119,12 +124,11 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan *Article {
 				if err != nil {
 					log.Fatal(err)
 				}
-				article := &Article{
+				article := Article{
 					path:     a.FullURL(),
 					title:    a.Title,
 					data:     data,
 					mimeType: a.MimeType(),
-					metadata: make(map[string]string), // TODO: add search info
 				}
 				zimArticles <- article
 				// TODO: For now we are ignoring some cases, but we should create "_exceptions/" directory in case of errors extracting the files like is done by the zim-tools.
@@ -141,8 +145,36 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan *Article {
 	return zimArticles
 }
 
+// makeManifest consumes zimArticles and create manifest entries
+func (idx *SwarmWikiIndexer) MakeManifest(ctx context.Context, files <-chan Article, quit chan struct{}) {
+	for a := range files {
+		buf := bytes.NewBuffer(a.data)
+		file := tarball.NewBufferFile(a.path, buf)
+		file.CalculateHash()
+		reference := swarm.NewAddress(file.Hash())
+
+		entry := ManifestEntry{
+			Reference: reference.String(),
+			Path:      a.path,
+			Metadata: map[string]string{
+				"Title":    a.title,
+				"MimeType": a.mimeType,
+				// TODO: add addresses and searchable data
+			},
+		}
+
+		idx.AddEntry(entry)
+
+		select {
+		case <-quit:
+			return
+		default:
+		}
+	}
+}
+
 // TODO: move file operations to its own package
-func (idx *SwarmWikiIndexer) TarZim(tarDir string, files <-chan *Article) error {
+func (idx *SwarmWikiIndexer) TarZim(tarDir string, files <-chan Article) error {
 	_, err := os.Stat(idx.outputDir)
 	if os.IsNotExist(err) {
 		if err := os.MkdirAll(idx.outputDir, 0755); err != nil {
@@ -185,9 +217,9 @@ func (idx *SwarmWikiIndexer) TarZim(tarDir string, files <-chan *Article) error 
 func (idx *SwarmWikiIndexer) MakeIndexPage(tarDir string) error {
 
 	tmplData := map[string]interface{}{
-		"Path":  path.Base(idx.ZimPath),
-		"Count": strconv.Itoa(int(idx.Z.ArticleCount)),
-		// "Manifest":    idx.m, // TODO: for searching
+		"Path":     path.Base(idx.ZimPath),
+		"Count":    strconv.Itoa(int(idx.Z.ArticleCount)),
+		"Manifest": idx.m,
 	}
 
 	mainPage, err := idx.Z.MainPage()

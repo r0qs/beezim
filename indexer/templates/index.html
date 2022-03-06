@@ -5,26 +5,83 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Swarm Wikipedia Zim for {{ .Path }} </title>
-  <!-- TODO: add style -->
+  <!-- TODO: minify files -->
+  <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/assets/css/swiki.css" rel="stylesheet">
 </head>
 
 <body>
-  <div class="container">
-    <div>
-      <h1>Welcome to Swarm ZIM</h1>
-      <p>This is currently a mirror of the ZIM file {{ .Path }}.<br>It contains {{ .Count }} articles.</p>
-      {{if .HasMainPage}}
-      <p>Click <a href={{ .MainURL }}>here</a> to go to the main page of this wiki.</p>
-      {{end}}
-      <!-- TODO: Alternatively browse over all the other files -->
+  <nav class="navbar navbar-default navbar-static-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">SWiki</a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="/">Home</a></li>
+          <li><a href="/browse/">Browse</a></li>
+          <li><a href="/about/">About</a></li>
+
+        </ul>
+        <form class="navbar-form navbar-right" role="form" action="/search/">
+          <input type="text" class="form-control" name="search_data" id="search_data">
+        </form>
+      </div>
     </div>
+  </nav>
+
+  <div class="container">
+    <!-- TODO: add iframe for easy navigation -->
+    <h1>Welcome to Swarm ZIM</h1>
+    <p>This is currently a mirror of the ZIM file {{ .Path }}.<br>It contains {{ .Count }} articles.</p>
+    {{ if .HasMainPage -}}
+    <p>Click <a href={{ .MainURL }}>here</a> to go to the main page of this wiki.</p>
+    {{ end -}}
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Article</th>
+          <th>Reference</th>
+          <th>Title</th>
+          <th>Mime type</th>
+        </tr>
+
+      <tbody>
+        {{ range $url, $data := .Manifest -}}
+        <tr>
+          <td><a href="{{ $url }}">{{ $url }}</a></td>
+          <td><a href="{{ $data.Reference }}">{{ $data.Reference }}</a></td>
+          {{ range $_, $v := $data.Metadata -}}
+          <td>{{ $v }}</td>
+          {{ end -}}
+        </tr>
+        {{ end -}}
+      </tbody>
+      </thead>
+    </table>
   </div>
 
   <div id="footer">
     <div class="container">
-      <!-- TODO: add credits: kiwix, swarm, zim-tools, gozim -->
+      This project was possible thankfully to the efforts of the below nonprofit organizations and open-source developers.
+      <ul class="thanks">
+        <li> <a href="https://www.ethswarm.org/">Swarm</a></li>
+        <li> <a href="https://www.kiwix.org/">Kiwix</a></li>
+        <li> <a href="https://github.com/openzim/zim-tools">zim-tools</a></li>
+        <li> <a href="https://github.com/akhenakh/gozim">gozim</a></li>
+      </ul>
     </div>
   </div>
+
+  <script src="/assets/js/jquery-3.6.0.min.js"></script>
+  <script src="/assets/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
