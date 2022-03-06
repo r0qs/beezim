@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Swarm Wikipedia Zim for {{ .Path }} </title>
+  <!-- TODO: add style -->
+</head>
+
+<body>
+  <div class="container">
+    <div>
+      <h1>Welcome to Swarm ZIM</h1>
+      <p>This is currently a mirror of the ZIM file {{ .Path }}.<br>It contains {{ .Count }} articles.</p>
+      {{if .HasMainPage}}
+      <p>Click <a href={{ .MainURL }}>here</a> to go to the main page of this wiki.</p>
+      {{end}}
+      <!-- TODO: Alternatively browse over all the other files -->
+    </div>
+  </div>
+
+  <div id="footer">
+    <div class="container">
+      <!-- TODO: add credits: kiwix, swarm, zim-tools, gozim -->
+    </div>
+  </div>
+</body>
+
+</html>
