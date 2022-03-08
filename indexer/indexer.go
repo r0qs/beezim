@@ -117,7 +117,7 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 				'A', // Text files (Article Format)
 				'I', // Media files
 				'M', // ZIM Metadata
-				'X': // Search indexes
+				'X': // Search indexes (Xapian db)
 
 				if a.EntryType == zim.RedirectEntry {
 					ridx, err := a.RedirectIndex()
