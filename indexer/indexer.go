@@ -57,6 +57,9 @@ type SwarmWikiIndexer struct {
 	root    swarm.Address         // TODO: hash of the root manifest metadata (if empty, not uploaded)
 }
 
+// TODO: store root in a local kv db pointing to the metadata in swarm
+// or maybe in a feed and parse the feed on load to collect all root pages and their metadata.
+
 type IndexEntry struct {
 	Path     string
 	Metadata map[string]string
