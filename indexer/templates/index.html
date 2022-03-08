@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Swarm Wikipedia Zim for {{ .Path }} </title>
+  <title>Swarm Zim Mirror of {{ .File }}</title>
   <!-- TODO: minify files -->
   <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
   <link href="/assets/css/swiki.css" rel="stylesheet">
@@ -39,25 +39,22 @@
   <div class="container">
     <!-- TODO: add iframe for easy navigation -->
     <h1>Welcome to Swarm ZIM</h1>
-    <p>This is currently a mirror of the ZIM file {{ .Path }}.<br>It contains {{ .Count }} articles.</p>
+    <p>This is currently a mirror of the ZIM file {{ .File }}.<br>It contains {{ .Count }} articles.</p>
     {{ if .HasMainPage -}}
     <p>Click <a href={{ .MainURL }}>here</a> to go to the main page of this wiki.</p>
-    {{ end -}}
-
+    {{ else -}}
     <table class="table table-striped">
       <thead>
         <tr>
           <th>Article</th>
-          <th>Reference</th>
           <th>Title</th>
           <th>Mime type</th>
         </tr>
 
       <tbody>
-        {{ range $url, $data := .Manifest -}}
+        {{ range $url, $data := .Articles -}}
         <tr>
           <td><a href="{{ $url }}">{{ $url }}</a></td>
-          <td><a href="{{ $data.Reference }}">{{ $data.Reference }}</a></td>
           {{ range $_, $v := $data.Metadata -}}
           <td>{{ $v }}</td>
           {{ end -}}
@@ -66,6 +63,7 @@
       </tbody>
       </thead>
     </table>
+    {{ end -}}
   </div>
 
   <div id="footer">
