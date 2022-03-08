@@ -10,9 +10,10 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-	"swiki/internal/tarball"
 	"sync"
 	"time"
+
+	"github.com/r0qs/beezim/internal/tarball"
 
 	zim "github.com/akhenakh/gozim"
 	"github.com/cheggaaa/pb/v3"

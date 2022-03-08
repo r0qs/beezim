@@ -1,4 +1,4 @@
-module swiki
+module github.com/r0qs/beezim
 
 go 1.17
 

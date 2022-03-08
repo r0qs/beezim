@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"swiki/beeclient/api"
+	"github.com/r0qs/beezim/internal/beeclient/api"
 
 	"github.com/ethersphere/bee/pkg/bigint"
 )

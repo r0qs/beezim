@@ -8,9 +8,10 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"swiki/beeclient"
-	"swiki/beeclient/api"
-	"swiki/internal/tarball"
+
+	"github.com/r0qs/beezim/internal/beeclient"
+	"github.com/r0qs/beezim/internal/beeclient/api"
+	"github.com/r0qs/beezim/internal/tarball"
 
 	"github.com/ethersphere/bee/pkg/swarm"
 )

@@ -13,10 +13,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"swiki/beeclient/api"
-	"swiki/beeclient/debugapi"
-	"swiki/httpclient"
-	"swiki/internal/tarball"
+
+	"github.com/r0qs/beezim/internal/beeclient/api"
+	"github.com/r0qs/beezim/internal/beeclient/debugapi"
+	"github.com/r0qs/beezim/internal/httpclient"
+	"github.com/r0qs/beezim/internal/tarball"
 
 	"github.com/ethersphere/bee/pkg/swarm"
 )

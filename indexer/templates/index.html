@@ -7,7 +7,7 @@
   <title>Swarm Zim Mirror of {{ .File }}</title>
   <!-- TODO: minify files -->
   <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
-  <link href="/assets/css/swiki.css" rel="stylesheet">
+  <link href="/assets/css/beezim.css" rel="stylesheet">
 </head>
 
 <body>
@@ -20,7 +20,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/">SWiki</a>
+        <a class="navbar-brand" href="/">BeeZIM</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
@@ -38,10 +38,10 @@
 
   <div class="container">
     <!-- TODO: add iframe for easy navigation -->
-    <h1>Welcome to Swarm ZIM</h1>
-    <p>This is currently a mirror of the ZIM file {{ .File }}.<br>It contains {{ .Count }} articles.</p>
+    <h1>Welcome to BeeZIM</h1>
+    <p>This is a mirror of the ZIM file {{ .File }} hosted on Swarm.<br>It contains {{ .Count }} articles.</p>
     {{ if .HasMainPage -}}
-    <p>Click <a href={{ .MainURL }}>here</a> to go to the main page of this wiki.</p>
+    <p>Click <a href={{ .MainURL }}>here</a> to go to the main page of this zim.</p>
     {{ else -}}
     <table class="table table-striped">
       <thead>

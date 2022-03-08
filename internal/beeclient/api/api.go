@@ -8,7 +8,8 @@ package api
 
 import (
 	"net/url"
-	"swiki/httpclient"
+
+	"github.com/r0qs/beezim/internal/httpclient"
 )
 
 const (

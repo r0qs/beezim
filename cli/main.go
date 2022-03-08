@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
-	"swiki/cli/cmd"
+
+	"github.com/r0qs/beezim/cli/cmd"
 )
 
 func main() {

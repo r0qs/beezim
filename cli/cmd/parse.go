@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
-	"swiki/indexer"
+
+	"github.com/r0qs/beezim/indexer"
 
 	"github.com/spf13/cobra"
 )

@@ -7,7 +7,8 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
-	"swiki/indexer"
+
+	"github.com/r0qs/beezim/indexer"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -59,6 +60,8 @@ func init() {
 	baseDir = filepath.Join(path.Dir(pwd), "../..")
 
 	// TODO: load from config (use viper)
+	// FIXME: this approach currently does not work with make install.
+	// TODO: move config files to home over ~/.beezim
 	if err := godotenv.Load(filepath.Join(baseDir, ".env")); err != nil {
 		log.Fatalf("error loading .env file: %v", err)
 	}
@@ -76,7 +79,7 @@ func init() {
 }
 
 var rootCmd = &cobra.Command{
-	Use:           "szim",
+	Use:           "beezim",
 	Short:         "Swarm zim mirror command-line tool",
 	SilenceErrors: true,
 	SilenceUsage:  true,

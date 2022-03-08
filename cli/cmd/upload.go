@@ -7,7 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"swiki/beeclient/api"
+
+	"github.com/r0qs/beezim/internal/beeclient/api"
 
 	"github.com/ethersphere/bee/pkg/swarm"
 	"github.com/spf13/cobra"
