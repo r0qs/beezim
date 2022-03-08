@@ -25,8 +25,8 @@ func newDirsService(a *Api) *DirsService {
 }
 
 // Download downloads data from the node
-func (d *DirsService) Download(ctx context.Context, addr swarm.Address, path string) (resp io.ReadCloser, err error) {
-	return d.api.RequestData(ctx, http.MethodGet, fmt.Sprintf("/bzz/%s/%s", addr.String(), path), nil)
+func (ds *DirsService) Download(ctx context.Context, addr swarm.Address, path string) (resp io.ReadCloser, err error) {
+	return ds.api.C.RequestData(ctx, http.MethodGet, fmt.Sprintf("/bzz/%s/%s", addr.String(), path), nil)
 }
 
 // DirsUploadResponse represents Upload's response
@@ -35,7 +35,7 @@ type DirsUploadResponse struct {
 }
 
 // Upload uploads TAR collection to the node
-func (d *DirsService) Upload(ctx context.Context, data io.Reader, size int64, o UploadCollectionOptions) (DirsUploadResponse, error) {
+func (ds *DirsService) Upload(ctx context.Context, data io.Reader, size int64, o UploadCollectionOptions) (DirsUploadResponse, error) {
 	var resp DirsUploadResponse
 
 	var indexDocumentHeader, errorDocumentHeader string
@@ -68,6 +68,6 @@ func (d *DirsService) Upload(ctx context.Context, data io.Reader, size int64, o 
 		header.Set(SwarmTagHeader, strconv.FormatUint(uint64(o.Tag), 10))
 	}
 
-	err := d.api.RequestWithHeader(ctx, http.MethodPost, "/bzz", header, data, &resp)
+	err := ds.api.C.RequestWithHeader(ctx, http.MethodPost, "/bzz", header, data, &resp)
 	return resp, err
 }

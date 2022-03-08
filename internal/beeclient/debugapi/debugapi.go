@@ -13,7 +13,7 @@ import (
 )
 
 type DebugAPI struct {
-	*httpclient.Client
+	C       *httpclient.Client
 	Node    *NodeService
 	Postage *PostageService
 }
@@ -23,7 +23,7 @@ func NewDebugAPI(beeURL *url.URL, o *httpclient.ClientOptions) (*DebugAPI, error
 	if err != nil {
 		return nil, err
 	}
-	c := &DebugAPI{httpc, nil, nil}
+	c := &DebugAPI{C: httpc}
 	c.Node = newNodeService(c)
 	c.Postage = newPostageService(c)
 	return c, nil

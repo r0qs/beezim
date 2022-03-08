@@ -11,7 +11,7 @@ GOBUILD = $(GOCMD) build -v
 GOCLEAN = $(GOCMD) clean
 GOTEST = $(GOCMD) test -v -failfast
 GORACE = GORACE="halt_on_error=1"
-GOTEST_RACE = $(GORACE) $(GOTEST) -race
+GOTEST_RACE = $(GORACE) $(GOTEST) -v -race
 
 ifndef $(GOPATH)
 GOPATH=$(shell echo $(shell $(GOCMD) env GOPATH) | sed -E "s;(.*):.*;\1;")
@@ -22,7 +22,7 @@ all: build
 
 build: bin
 	@echo "+ building beezim source"
-	$(GOBUILD) -v -o $(BIN_CLI) $(CLI_DIR)
+	$(GOBUILD) -o $(BIN_CLI) $(CLI_DIR)
 
 bin:
 	@mkdir $@
@@ -42,7 +42,7 @@ test:
 .PHONY: racetest
 racetest:
 	@echo "+ building tests using Race Detector"
-	$(GOTEST_RACE) -v $(SRC_ROOT)/...
+	$(GOTEST_RACE) $(SRC_ROOT)/...
 
 .PHONY: clean
 clean:

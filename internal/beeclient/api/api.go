@@ -27,7 +27,7 @@ const (
 )
 
 type Api struct {
-	*httpclient.Client
+	C     *httpclient.Client
 	Bytes *BytesService
 	Chunk *ChunkService
 	Dirs  *DirsService
@@ -38,7 +38,7 @@ func NewAPI(beeURL *url.URL, o *httpclient.ClientOptions) (*Api, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &Api{httpc, nil, nil, nil}
+	a := &Api{C: httpc}
 	a.Bytes = newBytesService(a)
 	a.Chunk = newChunkService(a)
 	a.Dirs = newDirsService(a)

@@ -29,9 +29,9 @@ type Addresses struct {
 	PSSPublicKey string        `json:"pss_public_key"`
 }
 
-func (n *NodeService) Addresses(ctx context.Context) (Addresses, error) {
+func (ns *NodeService) Addresses(ctx context.Context) (Addresses, error) {
 	var resp Addresses
-	err := n.debugAPI.RequestJSON(ctx, http.MethodGet, "/addresses", nil, &resp)
+	err := ns.debugAPI.C.RequestJSON(ctx, http.MethodGet, "/addresses", nil, &resp)
 	return resp, err
 }
 
@@ -43,7 +43,7 @@ type Peers struct {
 	Peers []Peer `json:"peers"`
 }
 
-func (n *NodeService) Peers(ctx context.Context) (resp Peers, err error) {
-	err = n.debugAPI.RequestJSON(ctx, http.MethodGet, "/peers", nil, &resp)
+func (ns *NodeService) Peers(ctx context.Context) (resp Peers, err error) {
+	err = ns.debugAPI.C.RequestJSON(ctx, http.MethodGet, "/peers", nil, &resp)
 	return
 }

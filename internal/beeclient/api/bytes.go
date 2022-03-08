@@ -24,8 +24,8 @@ func newBytesService(a *Api) *BytesService {
 }
 
 // Download downloads data from the node
-func (b *BytesService) Download(ctx context.Context, addr swarm.Address) (resp io.ReadCloser, err error) {
-	return b.api.RequestData(ctx, http.MethodGet, fmt.Sprintf("/bytes/%s", addr.String()), nil)
+func (bs *BytesService) Download(ctx context.Context, addr swarm.Address) (resp io.ReadCloser, err error) {
+	return bs.api.C.RequestData(ctx, http.MethodGet, fmt.Sprintf("/bytes/%s", addr.String()), nil)
 }
 
 // BytesUploadResponse represents Upload's response
@@ -34,7 +34,7 @@ type BytesUploadResponse struct {
 }
 
 // Upload uploads bytes to the node
-func (b *BytesService) Upload(ctx context.Context, data io.Reader, o UploadOptions) (BytesUploadResponse, error) {
+func (bs *BytesService) Upload(ctx context.Context, data io.Reader, o UploadOptions) (BytesUploadResponse, error) {
 	var resp BytesUploadResponse
 
 	header := make(http.Header)
@@ -42,6 +42,6 @@ func (b *BytesService) Upload(ctx context.Context, data io.Reader, o UploadOptio
 	if o.Pin {
 		header.Add(SwarmPinHeader, "true")
 	}
-	err := b.api.RequestWithHeader(ctx, http.MethodPost, "/bytes", header, data, &resp)
+	err := bs.api.C.RequestWithHeader(ctx, http.MethodPost, "/bytes", header, data, &resp)
 	return resp, err
 }

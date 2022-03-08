@@ -17,7 +17,7 @@ import (
 )
 
 type BeeUploader struct {
-	client      *beeclient.BeeClient
+	client      beeclient.BeeClientService
 	stampDepth  uint64
 	stampAmount *big.Int
 }
