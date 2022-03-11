@@ -49,6 +49,10 @@ Flags:
 ```
 
 // TODO: add description, explain sub commands and add example for each command
+### Configure the Bee environment
+Bee needs to be installed before using Beezim. See [.env-example](.env-example) for an example of the neccessary configuration parameters.
+Create a file named **.env** with configuration parameters for your system.
+
 ### Download ZIM files
 
 ```
