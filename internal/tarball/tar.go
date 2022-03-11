@@ -97,7 +97,7 @@ func Untar(tarFile string, targetDir string) error {
 
 		filePath := filepath.Join(targetDir, header.Name)
 		baseFilePath := filepath.Dir(filePath)
-		if _, err := os.Stat(baseFilePath); err != nil {
+		if _, err := os.Stat(baseFilePath); os.IsNotExist(err) {
 			if err := os.MkdirAll(baseFilePath, 0755); err != nil {
 				return err
 			}
@@ -137,7 +137,7 @@ func Tar(sourceDir string, tarFile string) error {
 
 	info, err := os.Stat(sourceDir)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	var baseDir string
