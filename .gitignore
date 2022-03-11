@@ -3,6 +3,7 @@ dist
 .env
 
 # dev
-data_root
+bee_data_root
+datadir
 output
 notes

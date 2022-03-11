@@ -8,11 +8,11 @@ if [[ -z "${BEE_BIN_PATH}" ]]; then
 else
     bee_path=${BEE_BIN_PATH}
 fi
-data_root=$(pwd)/data_root
-mkdir -p ${data_root}
+bee_data_root=$(pwd)/bee_data_root
+mkdir -p ${bee_data_root}
 
 run_dfs() {
-    dfs server --dataDir=${data_root}/dfs --beePort=1633
+    dfs server --dataDir=${bee_data_root}/dfs --beePort=1633
 }
 
 run_bee() {
@@ -23,7 +23,7 @@ run_bee() {
     api_port=${port}33
     p2p_port=${port}34
     debug_port=${port}35
-    data_dir="${data_root}/bee_$node"
+    data_dir="${bee_data_root}/bee_$node"
 
     echo "Starting node-$node"
     ${bee_path}/bee start \
