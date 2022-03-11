@@ -38,27 +38,20 @@ type DirsUploadResponse struct {
 func (ds *DirsService) Upload(ctx context.Context, data io.Reader, size int64, o UploadCollectionOptions) (DirsUploadResponse, error) {
 	var resp DirsUploadResponse
 
-	var indexDocumentHeader, errorDocumentHeader string
-	if o.IndexDocumentHeader != "" {
-		indexDocumentHeader = o.IndexDocumentHeader
-	} else {
-		indexDocumentHeader = "index.html"
-	}
-
-	if o.ErrorDocumentHeader != "" {
-		errorDocumentHeader = o.ErrorDocumentHeader
-	} else {
-		errorDocumentHeader = "error.html"
-	}
-
 	header := make(http.Header)
 	header.Set("Content-Type", "application/x-tar")
 	header.Set("Content-Length", strconv.FormatInt(size, 10))
 	header.Set(SwarmCollectionHeader, "true")
 	header.Set(SwarmDeferredUploadHeader, "true")
-	header.Set(SwarmIndexDocumentHeader, indexDocumentHeader)
-	header.Set(SwarmErrorDocumentHeader, errorDocumentHeader)
 	header.Set(SwarmPostageBatchIdHeader, o.BatchID)
+
+	if o.IndexDocumentHeader != "" {
+		header.Set(SwarmIndexDocumentHeader, o.IndexDocumentHeader)
+	}
+
+	if o.ErrorDocumentHeader != "" {
+		header.Set(SwarmErrorDocumentHeader, o.ErrorDocumentHeader)
+	}
 
 	if o.Pin {
 		header.Set(SwarmPinHeader, "true")
