@@ -13,7 +13,8 @@ import (
 func newParserCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "parse",
-		Short: "parse zim file and convert it to a tar file ready for upload",
+		Short: "parse zim file",
+		Long:  "\nThe default behavior is to parse the ZIM and convert it to a tar file ready for upload.\nIf you only want to extract its content, use this command with the option --extract-only.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if optionZimFile != "" {
 				if filepath.Ext(optionZimFile) != ".zim" {
@@ -25,13 +26,14 @@ func newParserCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&optionZimFile, optionNameZimFile, "", "path for the zim file")
+	cmd.Flags().BoolVar(&optionExtractOnly, optionNameExtractOnly, false, "parse and extract the zim file to the datadir")
 
 	return cmd
 }
 
 func parse(dataDir string, zimFile string) error {
 	zimPath := filepath.Join(dataDir, zimFile)
-	tarDirName := strings.TrimSuffix(filepath.Base(zimPath), ".zim")
+	dirName := strings.TrimSuffix(filepath.Base(zimPath), ".zim")
 
 	sidx, err := indexer.New(zimPath)
 	if err != nil {
@@ -41,20 +43,25 @@ func parse(dataDir string, zimFile string) error {
 	// Parse zim file
 	zimArticles := sidx.ParseZIM()
 
-	// Build tar
-	tarFile := filepath.Join(dataDir, fmt.Sprintf("%s.tar", tarDirName))
-	if err := sidx.TarZim(tarFile, zimArticles); err != nil {
-		return err
-	}
+	if optionExtractOnly {
+		outputDir := filepath.Join(optionDataDir, dirName)
+		return sidx.UnZim(outputDir, zimArticles)
+	} else {
+		tarFile := filepath.Join(dataDir, fmt.Sprintf("%s.tar", dirName))
+		// Build tar
+		if err := sidx.TarZim(tarFile, zimArticles); err != nil {
+			return err
+		}
 
-	// Append index page
-	if err := sidx.MakeIndexPage(tarFile); err != nil {
-		return fmt.Errorf("Failed to copy index.html page to tar file: %v", err)
-	}
+		// Append index page
+		if err := sidx.MakeIndexPage(tarFile); err != nil {
+			return fmt.Errorf("Failed to copy index.html page to tar file: %v", err)
+		}
 
-	// Append 404 page
-	if err := sidx.MakeErrorPage(tarFile); err != nil {
-		return fmt.Errorf("Failed to copy error.html page to tar file: %v", err)
+		// Append 404 page
+		if err := sidx.MakeErrorPage(tarFile); err != nil {
+			return fmt.Errorf("Failed to copy error.html page to tar file: %v", err)
+		}
 	}
 
 	return nil

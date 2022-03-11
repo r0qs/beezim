@@ -67,7 +67,7 @@ func downloadZim(targetURL string, dstFile string) error {
 		return fmt.Errorf("download failed: %v [status: %v]\n", targetURL, resp.Status)
 	}
 
-	log.Printf("Downloading zim file to: %v\n", path.Base(dstFile))
+	log.Printf("Downloading zim file to: %v\n", filepath.Base(dstFile))
 	size, err := strconv.Atoi(resp.Header.Get("Content-Length"))
 	if err != nil {
 		return err

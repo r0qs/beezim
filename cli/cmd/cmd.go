@@ -37,6 +37,7 @@ var (
 	optionZimFile        string
 	optionZimURL         string
 	optionTarFile        string
+	optionExtractOnly    bool
 )
 
 const (
@@ -53,11 +54,12 @@ const (
 	optionNameZimFile        = "zim"
 	optionNameZimURL         = "url"
 	optionNameTarFile        = "tar"
+	optionNameExtractOnly    = "extract-only"
 )
 
 func init() {
 	_, pwd, _, _ := runtime.Caller(0)
-	baseDir = filepath.Join(path.Dir(pwd), "../..")
+	baseDir = filepath.Join(filepath.Dir(pwd), "../..")
 
 	// TODO: load from config (use viper)
 	// FIXME: this approach currently does not work with make install.

@@ -3,8 +3,11 @@ package tarball
 import (
 	"archive/tar"
 	"bytes"
+	"errors"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func AppendTarData(tarFile string, file *File) error {
@@ -73,4 +76,106 @@ func ReadTarBuffer(tarFile string) (*bytes.Buffer, error) {
 		return nil, err
 	}
 	return &buf, nil
+}
+
+func Untar(tarFile string, targetDir string) error {
+	reader, err := os.Open(tarFile)
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+	tr := tar.NewReader(reader)
+
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		filePath := filepath.Join(targetDir, header.Name)
+		baseFilePath := filepath.Dir(filePath)
+		if _, err := os.Stat(baseFilePath); err != nil {
+			if err := os.MkdirAll(baseFilePath, 0755); err != nil {
+				return err
+			}
+		}
+
+		switch header.Typeflag {
+		case tar.TypeReg:
+			f, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			if err != nil {
+				return err
+			}
+
+			if _, err := io.Copy(f, tr); err != nil {
+				return err
+			}
+
+			f.Close()
+		}
+	}
+	return nil
+}
+
+func Tar(sourceDir string, tarFile string) error {
+	if filepath.Ext(tarFile) != ".tar" {
+		return errors.New("target tar file must have \".tar\" extention")
+	}
+
+	out := filepath.Join(filepath.Dir(sourceDir), tarFile)
+	f, err := os.Create(out)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	tw := tar.NewWriter(f)
+	defer tw.Close()
+
+	info, err := os.Stat(sourceDir)
+	if err != nil {
+		return nil
+	}
+
+	var baseDir string
+	if info.IsDir() {
+		baseDir = filepath.Base(sourceDir)
+	}
+
+	return filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		hdr, err := tar.FileInfoHeader(info, info.Name())
+		if err != nil {
+			return err
+		}
+
+		if baseDir != "" {
+			hdr.Name = filepath.Join(baseDir, strings.TrimPrefix(path, sourceDir))
+		}
+
+		if err := tw.WriteHeader(hdr); err != nil {
+			return err
+		}
+
+		if !info.IsDir() {
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			_, err = io.Copy(tw, file)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }

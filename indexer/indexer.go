@@ -128,7 +128,7 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 					if err != nil {
 						return
 					}
-					data, err = buildRedirectPage(filepath.Base(ra.FullURL()))
+					data, err = buildRedirectPage(path.Base(ra.FullURL()))
 					if err != nil {
 						log.Fatalf("error building redirect page: %v", err)
 					}
@@ -163,7 +163,38 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 	return zimArticles
 }
 
-// TODO: move file operations to its own package
+func (idx *SwarmWikiIndexer) UnZim(outputDir string, files <-chan Article) error {
+	if _, err := os.Stat(outputDir); err != nil {
+		if err := os.MkdirAll(outputDir, 0755); err != nil {
+			return err
+		}
+	}
+
+	for file := range files {
+		filePath := filepath.Join(outputDir, file.path)
+		fileDirPath := filepath.Dir(filePath)
+
+		if _, err := os.Stat(fileDirPath); err != nil {
+			if err := os.MkdirAll(fileDirPath, 0755); err != nil {
+				return err
+			}
+		}
+
+		f, err := os.Create(filePath)
+		if err != nil {
+			return err
+		}
+
+		if _, err := f.Write(file.data); err != nil {
+			return err
+		}
+
+		f.Close()
+	}
+
+	return nil
+}
+
 func (idx *SwarmWikiIndexer) TarZim(tarFile string, files <-chan Article) error {
 	f, err := os.Create(tarFile)
 	if err != nil {
@@ -178,8 +209,6 @@ func (idx *SwarmWikiIndexer) TarZim(tarFile string, files <-chan Article) error 
 			Mode: 0600,
 			Size: int64(len(file.data)),
 		}
-		// TODO: add file.mimeType ?
-		// TODO: set header.Typeflag (tar.TypeDir, tar.TypeReg)
 
 		if err := tw.WriteHeader(hdr); err != nil {
 			return err
@@ -210,7 +239,7 @@ func buildRedirectPage(pagePath string) ([]byte, error) {
 
 func (idx *SwarmWikiIndexer) MakeIndexPage(tarFile string) error {
 	tmplData := map[string]interface{}{
-		"File":     path.Base(idx.ZimPath),
+		"File":     filepath.Base(idx.ZimPath),
 		"Count":    strconv.Itoa(int(idx.Z.ArticleCount)),
 		"Articles": idx.entries,
 	}
@@ -236,7 +265,7 @@ func (idx *SwarmWikiIndexer) MakeIndexPage(tarFile string) error {
 
 func (idx *SwarmWikiIndexer) MakeErrorPage(tarFile string) error {
 	tmplData := map[string]interface{}{
-		"File": path.Base(idx.ZimPath),
+		"File": filepath.Base(idx.ZimPath),
 	}
 	var buf bytes.Buffer
 	if err := templates.ExecuteTemplate(&buf, "error.html", tmplData); err != nil {

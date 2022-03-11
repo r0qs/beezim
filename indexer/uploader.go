@@ -50,9 +50,9 @@ func NewUploader(beeApiUrl string, beeDebugApiUrl string, depth uint64, amount i
 	}, nil
 }
 
-func (b BeeUploader) UploadMatchTar(ctx context.Context, outputDir string, filter func(x string) bool, opts api.UploadCollectionOptions) (map[string]swarm.Address, error) {
+func (b BeeUploader) UploadMatchTar(ctx context.Context, targetDir string, filter func(x string) bool, opts api.UploadCollectionOptions) (map[string]swarm.Address, error) {
 	files := make(map[string]swarm.Address)
-	err := filepath.Walk(outputDir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(targetDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
