@@ -33,6 +33,15 @@ func NewBufferFile(name string, buffer *bytes.Buffer) *File {
 	}
 }
 
+func NewBytesFile(name string, data []byte) *File {
+	reader := bytes.NewReader(data)
+	return &File{
+		name:       name,
+		dataReader: reader,
+		size:       int64(reader.Len()),
+	}
+}
+
 // CalculateHash calculates hash from dataReader.
 // It replaces dataReader with another that will contain the data.
 func (f *File) CalculateHash() error {

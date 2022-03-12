@@ -72,6 +72,11 @@ func parse(dataDir string, zimFile string) error {
 		if err := sidx.MakeErrorPage(tarFile); err != nil {
 			return fmt.Errorf("Failed to copy error.html page to tar file: %v", err)
 		}
+
+		// Append assets
+		if err := indexer.AddAssets(tarFile); err != nil {
+			return fmt.Errorf("Failed to copy assets directory to tar file %v", err)
+		}
 	}
 
 	return nil

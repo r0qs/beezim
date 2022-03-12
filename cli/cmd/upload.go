@@ -31,6 +31,7 @@ func newUploadCmd() *cobra.Command {
 				return err
 			}
 			log.Printf("collection %v uploaded with reference: %v", optionTarFile, addr)
+			fmt.Printf("\nTry the link: %s\n", makeURL(addr.String()))
 			return nil
 		},
 	}

@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func AppendTarData(tarFile string, file *File) error {
+func AppendTarFile(tarFile string, file *File) error {
 	tf, err := os.OpenFile(tarFile, os.O_RDWR, os.ModePerm)
 	if err != nil {
 		return err

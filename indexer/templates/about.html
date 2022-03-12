@@ -1,0 +1,46 @@
+{{ define "content" -}}
+<div class="container bg-light p-5 rounded">
+  <h1>Welcome to BeeZIM</h1>
+  <p class="lead">This is a mirror of the ZIM file {{ .File }} hosted on Swarm.<br>It contains {{ .Count }} articles.
+  </p>
+  {{ if .HasMainPage -}}
+  <a class="btn btn-lg btn-dark" href="{{ .MainURL }}" role="button">Go to main page!</a>
+  <!-- TODO: maybe replace this bottom for "browse articles" and show the list below. Or have a tab specific for that.-->
+  <!-- TODO: add pagination -->
+  {{ else -}}
+  <div class="table-responsive">
+    <table class="table table-light table-striped">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Mime Type</th>
+          <th>Article Title</th>
+        </tr>
+      <tbody>
+        {{ range $url, $data := .Articles -}}
+        <tr>
+          <td><a href="{{ $url }}" class="truncate-url">{{ $url }}</a></td>
+          {{ range $_, $v := $data.Metadata -}}
+          <td>{{ $v }}</td>
+          {{- end }}
+        </tr>
+        {{ end -}}
+      </tbody>
+      </thead>
+    </table>
+  </div>
+  {{- end -}}
+  <div class="mt-5">
+    <p>This project was possible thankfully to the efforts of the below nonprofit organizations and open-source
+      libraries.</p>
+    <ul id="thanks">
+      <li> <a href="https://www.ethswarm.org/">Swarm</a></li>
+      <li> <a href="https://www.kiwix.org/">Kiwix</a></li>
+      <li> <a href="https://github.com/openzim/zim-tools">zim-tools</a></li>
+      <li> <a href="https://github.com/akhenakh/gozim">gozim</a></li>
+      <li> <a href="https://xapian.org/">Xapian</a></li>
+      <li> <a href="https://emscripten.org/">Emscripten</a></li>
+    </ul>
+  </div>
+</div>
+{{ end -}}
