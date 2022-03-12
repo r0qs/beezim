@@ -38,6 +38,7 @@ var (
 	optionZimURL         string
 	optionTarFile        string
 	optionExtractOnly    bool
+	optionEnableSearch   bool
 )
 
 const (
@@ -55,6 +56,7 @@ const (
 	optionNameZimURL         = "url"
 	optionNameTarFile        = "tar"
 	optionNameExtractOnly    = "extract-only"
+	optionNameEnableSearch   = "enable-search"
 )
 
 func init() {
@@ -78,6 +80,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&optionGatewayMode, optionNameGatewayMode, false, fmt.Sprintf("connect to the swarm public gateway (default \"%s\")", os.Getenv("BEE_GATEWAY")))
 	rootCmd.PersistentFlags().StringVar(&optionDataDir, optionNameDataDir, "", "path to datadir directory (default \"./datadir\")")
 	rootCmd.PersistentFlags().BoolVar(&optionClean, optionNameClean, false, "delete all downloaded zim and generated tar files")
+	rootCmd.PersistentFlags().BoolVar(&optionEnableSearch, optionNameEnableSearch, false, "enable search index")
 }
 
 var rootCmd = &cobra.Command{

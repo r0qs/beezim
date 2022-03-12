@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"embed"
+	"errors"
 	"html/template"
 	"log"
 	"os"
@@ -164,7 +165,7 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 }
 
 func (idx *SwarmWikiIndexer) UnZim(outputDir string, files <-chan Article) error {
-	if _, err := os.Stat(outputDir); err != nil {
+	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(outputDir, 0755); err != nil {
 			return err
 		}
@@ -174,7 +175,7 @@ func (idx *SwarmWikiIndexer) UnZim(outputDir string, files <-chan Article) error
 		filePath := filepath.Join(outputDir, file.path)
 		fileDirPath := filepath.Dir(filePath)
 
-		if _, err := os.Stat(fileDirPath); err != nil {
+		if _, err := os.Stat(fileDirPath); os.IsNotExist(err) {
 			if err := os.MkdirAll(fileDirPath, 0755); err != nil {
 				return err
 			}
@@ -227,42 +228,71 @@ func (idx *SwarmWikiIndexer) TarZim(tarFile string, files <-chan Article) error 
 
 func buildRedirectPage(pagePath string) ([]byte, error) {
 	tmplData := map[string]interface{}{
-		"URL": pagePath,
+		"MainURL": pagePath,
 	}
 
 	var buf bytes.Buffer
-	if err := templates.ExecuteTemplate(&buf, "redirect.html", tmplData); err != nil {
+	if err := templates.ExecuteTemplate(&buf, "index-redirect.html", tmplData); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
 }
 
-func (idx *SwarmWikiIndexer) MakeIndexPage(tarFile string) error {
-	tmplData := map[string]interface{}{
-		"File":     filepath.Base(idx.ZimPath),
-		"Count":    strconv.Itoa(int(idx.Z.ArticleCount)),
-		"Articles": idx.entries,
-	}
-
+// MakeRedirectIndexPage creates an redirect index to the main page
+// when it exists in the zim archive.
+func (idx *SwarmWikiIndexer) MakeRedirectIndexPage(tarFile string) error {
 	mainPage, err := idx.Z.MainPage()
 	if err != nil {
 		return err
 	}
 
-	if mainPage != nil {
-		tmplData["HasMainPage"] = true
-		tmplData["MainURL"] = mainPage.FullURL()
+	// TODO: handle the case where there is no main page in the article.
+	// Should we add an index and browse all articles?
+	if mainPage == nil {
+		return errors.New("no index found in the ZIM")
 	}
-	// TODO: handle the case where there is no main page.
-	// Use the default index and browse all articles
 
 	var buf bytes.Buffer
-	if err := templates.ExecuteTemplate(&buf, "index.html", tmplData); err != nil {
+	data, err := buildRedirectPage(mainPage.FullURL())
+	if err != nil {
+		return err
+	}
+	_, err = buf.Write(data)
+	if err != nil {
 		return err
 	}
 	return tarball.AppendTarData(tarFile, tarball.NewBufferFile("index.html", &buf))
 }
 
+// MakeIndexSearchPage creates a custom index with the text search tool and
+// embed the current main page in the new index.
+func (idx *SwarmWikiIndexer) MakeIndexSearchPage(tarFile string) error {
+	mainPage, err := idx.Z.MainPage()
+	if err != nil {
+		return err
+	}
+
+	mainURL := ""
+	if mainPage != nil {
+		mainURL = mainPage.FullURL()
+	}
+
+	tmplData := map[string]interface{}{
+		"File":        filepath.Base(idx.ZimPath),
+		"Count":       strconv.Itoa(int(idx.Z.ArticleCount)),
+		"Articles":    idx.entries,
+		"HasMainPage": (mainURL != ""),
+		"MainURL":     mainURL,
+	}
+
+	var buf bytes.Buffer
+	if err := templates.ExecuteTemplate(&buf, "index-search.html", tmplData); err != nil {
+		return err
+	}
+	return tarball.AppendTarData(tarFile, tarball.NewBufferFile("index.html", &buf))
+}
+
+// MakeErrorPage creates a custom error page
 func (idx *SwarmWikiIndexer) MakeErrorPage(tarFile string) error {
 	tmplData := map[string]interface{}{
 		"File": filepath.Base(idx.ZimPath),

@@ -64,9 +64,13 @@ func upload(ctx context.Context, dataDir string, tarFile string, batchID string)
 	// allow users to agree/deny with the cost before proceed with each upload
 	// the stamps will be automatically bought
 	// TODO: keep address for local metadata
+	// TODO: command to buy stamps and check if stamp they are usable
+	// --wait-usable-stamp (keep waiting until bought stamp is ready)
 	return uploader.UploadTarFile(ctx, tarPath, tarFile, api.UploadCollectionOptions{
-		Pin:     true,
-		BatchID: batchID,
+		Pin:                 true,
+		BatchID:             batchID,
+		IndexDocumentHeader: "index.html",
+		ErrorDocumentHeader: "error.html",
 	})
 }
 
@@ -96,7 +100,9 @@ func uploadAllFrom(ctx context.Context, dataDir string, kiwixMirror string, batc
 		return strings.Contains(filename, kiwixMirror)
 	}
 	return uploader.UploadMatchTar(ctx, dataDir, filter, api.UploadCollectionOptions{
-		Pin:     true,
-		BatchID: batchID,
+		Pin:                 true,
+		BatchID:             batchID,
+		IndexDocumentHeader: "index.html",
+		ErrorDocumentHeader: "error.html",
 	})
 }

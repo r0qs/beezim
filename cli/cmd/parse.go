@@ -42,20 +42,30 @@ func parse(dataDir string, zimFile string) error {
 
 	// Parse zim file
 	zimArticles := sidx.ParseZIM()
+	// TODO: kill the parser goroutine is there is nothing to do: zim was already parsed.
 
 	if optionExtractOnly {
 		outputDir := filepath.Join(optionDataDir, dirName)
 		return sidx.UnZim(outputDir, zimArticles)
 	} else {
+		// TODO: what should be the default policy? check if file already exists and
+		// do not build the tar, or overwrite it everytime?
 		tarFile := filepath.Join(dataDir, fmt.Sprintf("%s.tar", dirName))
 		// Build tar
 		if err := sidx.TarZim(tarFile, zimArticles); err != nil {
 			return err
 		}
 
-		// Append index page
-		if err := sidx.MakeIndexPage(tarFile); err != nil {
-			return fmt.Errorf("Failed to copy index.html page to tar file: %v", err)
+		if optionEnableSearch {
+			// Append index page with search tool
+			if err := sidx.MakeIndexSearchPage(tarFile); err != nil {
+				return fmt.Errorf("Failed to copy index.html page to tar file: %v", err)
+			}
+		} else {
+			// Append redirected index page
+			if err := sidx.MakeRedirectIndexPage(tarFile); err != nil {
+				return fmt.Errorf("Failed to copy index.html page to tar file: %v", err)
+			}
 		}
 
 		// Append 404 page

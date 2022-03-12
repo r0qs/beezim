@@ -26,12 +26,17 @@ Make a ENS entry to the root manifest and point to: https://beezim.bzz.link or h
 
 The current command-line tool has the following available commands:
 ```
+Swarm zim mirror command-line tool
+
+Usage:
+  beezim [command]
+
 Available Commands:
   download    download zim file
   help        Help about any command
   list        Shows a list of compressed websites currently maintained by Kiwix
   mirror      mirror kiwix zim repositories to swarm
-  parse       parse zim file and convert it to a tar file ready for upload
+  parse       parse zim file
   upload      upload zim file to swarm
 
 Flags:
@@ -42,10 +47,13 @@ Flags:
       --bee-debug-api-url string   bee debug api url (default "http://localhost:1635")
       --clean                      delete all downloaded zim and generated tar files
       --datadir string             path to datadir directory (default "./datadir")
+      --enable-search              enable search index
       --gas-price string           gas price for postage stamps purchase
       --gateway                    connect to the swarm public gateway (default "https://gateway.ethswarm.org")
   -h, --help                       help for beezim
       --kiwix string               name of the compressed website hosted by Kiwix. Run "list" to see all available options (default "wikipedia")
+
+Use "beezim [command] --help" for more information about a command.
 ```
 
 // TODO: add description, explain sub commands and add example for each command
@@ -90,4 +98,8 @@ Performs the download `->` parser `->` upload for one or many zims. (not finishe
 
 ```
 go run cli/main.go mirror --kiwix=gutenberg --zim=gutenberg_af_all_2022-03.zim --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
+```
+
+```
+go run cli/main.go mirror --kiwix=others --zim=alpinelinux_en_all_nopic_2021-03.zim --bee-api-url=http://localhost:1733 --bee-debug-api-url=http://localhost:1735 --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0
 ```

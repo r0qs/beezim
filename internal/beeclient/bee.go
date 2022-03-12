@@ -105,7 +105,7 @@ func (c *BeeClient) UploadCollection(ctx context.Context, f *tarball.File, o api
 	h := tarball.FileHasher()
 	r, err := c.api.Dirs.Upload(ctx, io.TeeReader(f.DataReader(), h), f.Size(), o)
 	if err != nil {
-		return fmt.Errorf("upload collection: %w", err)
+		return fmt.Errorf("upload collection: %v", err)
 	}
 
 	f.SetAddress(r.Reference)

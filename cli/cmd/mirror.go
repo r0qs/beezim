@@ -10,7 +10,6 @@ import (
 )
 
 func newMirrorCmd() *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:   "mirror",
 		Short: "mirror kiwix zim repositories to swarm",
@@ -36,7 +35,7 @@ func newMirrorCmd() *cobra.Command {
 				return err
 			}
 			log.Printf("collection %v uploaded with reference: %v", tarFile, addr)
-			fmt.Printf("Try the link: %s\n", makeURL(addr.String()))
+			fmt.Printf("\nTry the link: %s\n", makeURL(addr.String()))
 			return nil
 		},
 	}
