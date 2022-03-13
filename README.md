@@ -64,7 +64,7 @@ Create a file named **.env** with configuration parameters for your system.
 ### Download ZIM files
 
 ```
-go run cli/main.go download --kiwix=wikipedia --zim=wikipedia_arc_all_nopic_2022-02.zim 
+go run cli/main.go download --kiwix=wikipedia --zim=wikipedia_es_climate_change_mini_2022-02.zim 
 ```
 
 ### Parse ZIM files
