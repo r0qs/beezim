@@ -1,0 +1,29 @@
+{{ define "content" -}}
+<div class="container p-5">
+  <p class="lead">List of all uploaded files extracted from the ZIM: {{ .File }}.<br>It contains {{ .Count }} articles.
+  </p>
+  <!-- TODO: add pagination -->
+  <!-- TODO: display files in a tree view organized by source/article/media/metadata/search index -->
+  <div class="table-responsive">
+    <table class="table table-light table-striped">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Mime Type</th>
+          <th>Article Title</th>
+        </tr>
+      <tbody>
+        {{ range $url, $data := .Articles -}}
+        <tr>
+          <td><a href="{{ $url }}" class="truncate-url">{{ $url }}</a></td>
+          {{ range $_, $v := $data.Metadata -}}
+          <td>{{ $v }}</td>
+          {{- end }}
+        </tr>
+        {{ end -}}
+      </tbody>
+      </thead>
+    </table>
+  </div>
+</div>
+{{ end -}}

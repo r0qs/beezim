@@ -1,46 +1,36 @@
 {{ define "content" -}}
-<div class="container bg-light p-5 rounded">
-  <h1>Welcome to BeeZIM</h1>
-  <p class="lead">This is a mirror of the ZIM file {{ .File }} hosted on Swarm.<br>It contains {{ .Count }} articles.
-  </p>
+<div class="container p-5">
+  <div>
+    <h1>Welcome to BeeZIM</h1>
+    <p class="lead mb-5"> We are uploading copies of entire websites to Swarm!</p>
+    <p>
+      Thankfully to <a href="https://wiki.openzim.org/wiki/OpenZIM">OpenZIM Project</a>, which is currently maintained
+      by
+      a not-for-profit entity named <a href="https://www.kiwix.org/en/">Kiwix</a>, websites can be highly compressed
+      into
+      a single file and easily shared by users or viewed in devices with very limited computational resources.
+    </p>
+    <p>
+      The compressed files follow the <a href="https://wiki.openzim.org/wiki/ZIM_file_format">ZIM file format</a>, and
+      according to Kiwix, the entire Wikipedia can be compressed in an 80Gb zim file, containing more than 6 million
+      articles, with images!
+    </p>
+    <p>The main purpose of the Zim file format is to store websites content for offline usage.</p>
+    <p>
+      Our goal is to use the zim files to mirror websites on decentralized storage like <a
+        href="https://www.ethswarm.org/">Swarm</a>, providing censorship resistance to the websites that we love so
+      much,
+      like <a href="https://www.wikipedia.org/">Wikipedia</a> and <a href="https://www.gutenberg.org/">Project
+        Gutenberg</a>. We want to make a version of the <a href="https://archive.org/web/">Internet Archive</a> that
+      cannot be censored.
+    </p>
+  </div>
+
   {{ if .HasMainPage -}}
-  <a class="btn btn-lg btn-dark" href="{{ .MainURL }}" role="button">Go to main page!</a>
-  <!-- TODO: maybe replace this bottom for "browse articles" and show the list below. Or have a tab specific for that.-->
-  <!-- TODO: add pagination -->
-  {{ else -}}
-  <div class="table-responsive">
-    <table class="table table-light table-striped">
-      <thead>
-        <tr>
-          <th>File</th>
-          <th>Mime Type</th>
-          <th>Article Title</th>
-        </tr>
-      <tbody>
-        {{ range $url, $data := .Articles -}}
-        <tr>
-          <td><a href="{{ $url }}" class="truncate-url">{{ $url }}</a></td>
-          {{ range $_, $v := $data.Metadata -}}
-          <td>{{ $v }}</td>
-          {{- end }}
-        </tr>
-        {{ end -}}
-      </tbody>
-      </thead>
-    </table>
+  <div class="d-grid mt-5 col-6 mx-auto">
+    <a class="btn btn-lg btn-outline-dark" href="index.html" role="button">Click here to read this article!</a>
   </div>
-  {{- end -}}
-  <div class="mt-5">
-    <p>This project was possible thankfully to the efforts of the below nonprofit organizations and open-source
-      libraries.</p>
-    <ul id="thanks">
-      <li> <a href="https://www.ethswarm.org/">Swarm</a></li>
-      <li> <a href="https://www.kiwix.org/">Kiwix</a></li>
-      <li> <a href="https://github.com/openzim/zim-tools">zim-tools</a></li>
-      <li> <a href="https://github.com/akhenakh/gozim">gozim</a></li>
-      <li> <a href="https://xapian.org/">Xapian</a></li>
-      <li> <a href="https://emscripten.org/">Emscripten</a></li>
-    </ul>
-  </div>
+  {{ end -}}
+
 </div>
 {{ end -}}

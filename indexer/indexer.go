@@ -344,6 +344,11 @@ func (idx *SwarmWikiIndexer) MakeIndexSearchPage(tarFile string) error {
 		return err
 	}
 
+	// make browse files page using files template
+	if err = makePage("files.html", "files.html", tmplData, tarFile); err != nil {
+		return err
+	}
+
 	// make index page using index-search template
 	return makePage("index.html", "index-search.html", tmplData, tarFile)
 }

@@ -4,7 +4,7 @@ This repository provides tools to publish copies of entire websites on Swarm.
 
 Thankfully to [OpenZIM Project](https://wiki.openzim.org/wiki/OpenZIM), which is currently maintained by a not-for-profit entity named [Kiwix](https://www.kiwix.org/en/), websites can be highly compressed into a single file and easily shared by users or viewed in devices with very limited computational resources. 
 
-The compressed files follow the [ZIM file format](https://wiki.openzim.org/wiki/ZIM_file_format), and according to Kiwix, their implementation can compress the entirety of Wikipedia in an 80Gb zim file, containing more than 6 million articles, with images!
+The compressed files follow the [ZIM file format](https://wiki.openzim.org/wiki/ZIM_file_format), and according to Kiwix, the entire Wikipedia can be compressed in an 80Gb zim file, containing more than 6 million articles, with images!
 The main purpose of Zim file format is to store websites content for offline usage.
 
 Our goal is to use the zim files to mirror websites on decentralized storage like [Swarm](https://www.ethswarm.org/), providing censorship resistance to the websites that we love so much, like [Wikipedia](https://www.wikipedia.org/) and [Project Gutenberg](https://www.gutenberg.org/). We want to make a version of the [Internet Archive](https://archive.org/web/) that cannot be censored.
