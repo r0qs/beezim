@@ -1,4 +1,4 @@
-# Bzzim Mirror
+# BeeZIM Mirror
 
 This repository provides tools to publish copies of entire websites on Swarm.
 
@@ -67,7 +67,15 @@ Create a file named **.env** with configuration parameters for your system.
 go run cli/main.go download --kiwix=wikipedia --zim=wikipedia_es_climate_change_mini_2022-02.zim 
 ```
 
-### Parse ZIM files
+### Parse ZIM files and embed a search engine
+
+This converts the zim files to tar archives and embed information to them (JS, CSS, HTML) and a search engine using the Xapian index.
+
+```
+go run cli/main.go parse --zim=wikipedia_es_climate_change_mini_2022-02.zim --enable-search
+```
+
+### Parse ZIM files without embedded search
 
 This converts the zim files to tar archives and embed information to them (JS, CSS, HTML).
 
