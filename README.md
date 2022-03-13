@@ -81,7 +81,7 @@ go run cli/main.go parse --zim=wikipedia_es_climate_change_mini_2022-02.zim
 go run cli/main.go upload --tar=wikipedia_es_climate_change_mini_2022-02.tar --gateway
 ```
 ```
-go run cli/main.go upload --tar=wikipedia_es_climate_change_mini_2022-02.tar --batch=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
+go run cli/main.go upload --tar=wikipedia_es_climate_change_mini_2022-02.tar --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
 ```
 
 ```
