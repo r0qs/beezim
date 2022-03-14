@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
@@ -53,6 +54,12 @@ func (a Article) Data() []byte {
 	return a.Data()
 }
 
+type IndexMetadata struct {
+	Title	string
+	MimeType string
+	Redirect bool
+}
+
 type SwarmWikiIndexer struct {
 	mu      sync.Mutex
 	ZimPath string
@@ -66,7 +73,7 @@ type SwarmWikiIndexer struct {
 
 type IndexEntry struct {
 	Path     string
-	Metadata map[string]string
+	Metadata IndexMetadata
 }
 
 func New(zimPath string) (*SwarmWikiIndexer, error) {
@@ -82,7 +89,7 @@ func New(zimPath string) (*SwarmWikiIndexer, error) {
 	}, nil
 }
 
-func (idx *SwarmWikiIndexer) AddEntry(entryPath string, metadata map[string]string) {
+func (idx *SwarmWikiIndexer) AddEntry(entryPath string, metadata IndexMetadata) {
 	idx.mu.Lock()
 	defer idx.mu.Unlock()
 
@@ -153,9 +160,10 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 				}
 
 				// TODO: add addresses and searchable data
-				idx.AddEntry(a.FullURL(), map[string]string{
-					"Title":    a.Title,
-					"MimeType": a.MimeType(),
+				idx.AddEntry(a.FullURL(), IndexMetadata{
+					Title:a.Title,
+					MimeType: a.MimeType(),
+					Redirect: a.EntryType == zim.RedirectEntry,
 				})
 
 				// TODO: For now we are ignoring some cases, but we should create "_exceptions/" directory in case of errors extracting the files like is done by the zim-tools.
@@ -349,6 +357,13 @@ func (idx *SwarmWikiIndexer) MakeIndexSearchPage(tarFile string) error {
 		return err
 	}
 
+	// make files page in JSON format
+	if file, err := json.Marshal(idx.entries); err == nil {
+		if err = tarball.AppendTarFile(tarFile, tarball.NewBufferFile("files.json", bytes.NewBuffer(file))); err != nil{
+			return err
+		}
+	}
+	
 	// make index page using index-search template
 	return makePage("index.html", "index-search.html", tmplData, tarFile)
 }

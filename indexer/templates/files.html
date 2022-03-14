@@ -16,9 +16,9 @@
         {{ range $url, $data := .Articles -}}
         <tr>
           <td><a href="{{ $url }}" class="truncate-url">{{ $url }}</a></td>
-          {{ range $_, $v := $data.Metadata -}}
-          <td>{{ $v }}</td>
-          {{- end }}
+          <td>{{ $data.Metadata.Title }}</td>
+          <td>{{ $data.Metadata.MimeType }}</td>
+          <td>{{ $data.Metadata.Redirect }}</td>
         </tr>
         {{ end -}}
       </tbody>
