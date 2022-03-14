@@ -1,6 +1,7 @@
 # Build directory
 dist
 .env
+bin
 
 # dev
 bee_data_root
