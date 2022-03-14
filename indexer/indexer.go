@@ -20,7 +20,6 @@ import (
 
 	zim "github.com/akhenakh/gozim"
 	"github.com/cheggaaa/pb/v3"
-	"github.com/ethersphere/bee/pkg/swarm"
 )
 
 //go:embed assets/*
@@ -58,7 +57,6 @@ type SwarmWikiIndexer struct {
 	ZimPath string
 	Z       *zim.ZimReader
 	entries map[string]IndexEntry // RELATIVE_PATH or ArticleID -> METADATA ?
-	root    swarm.Address         // TODO: hash of the root manifest metadata (if empty, not uploaded)
 }
 
 // TODO: store root in a local kv db pointing to the metadata in swarm

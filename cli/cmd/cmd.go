@@ -3,12 +3,13 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
 
-	"github.com/r0qs/beezim/indexer"
+	"github.com/r0qs/beezim/internal/beeclient"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
@@ -19,8 +20,8 @@ const (
 )
 
 var (
-	baseDir  string
-	uploader *indexer.BeeUploader
+	baseDir string
+	bee     beeclient.BeeClientService
 )
 
 var (
@@ -94,7 +95,7 @@ var rootCmd = &cobra.Command{
 			optionBeeDebugApiUrl = ""
 		}
 
-		uploader, err = indexer.NewUploader(optionBeeApiUrl, optionBeeDebugApiUrl, optionBatchDepth, optionBatchAmount)
+		bee, err = NewBeeClient(optionBeeApiUrl, optionBeeDebugApiUrl)
 		if err != nil {
 			return err
 		}
@@ -136,3 +137,25 @@ func setDataDir() error {
 func makeURL(filePath string) string {
 	return path.Join(optionBeeApiUrl, "bzz", filePath)
 }
+
+func NewBeeClient(beeApiUrl string, beeDebugApiUrl string) (*beeclient.BeeClient, error) {
+	var err error
+	opts := beeclient.ClientOptions{}
+
+	opts.APIURL, err = url.Parse(beeApiUrl)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing api url: %v", err)
+	}
+
+	if beeDebugApiUrl != "" {
+		opts.DebugAPIURL, err = url.Parse(beeDebugApiUrl)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing debug api url: %v", err)
+		}
+	}
+
+	return beeclient.NewBee(opts)
+}
+
+//TODO: Buy stamps
+//TODO: Make manifest metadata

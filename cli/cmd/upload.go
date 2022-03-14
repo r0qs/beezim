@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/r0qs/beezim/internal/beeclient/api"
+	"github.com/r0qs/beezim/internal/tarball"
 
 	"github.com/ethersphere/bee/pkg/swarm"
 	"github.com/spf13/cobra"
@@ -67,7 +68,7 @@ func upload(ctx context.Context, dataDir string, tarFile string, batchID string)
 	// TODO: keep address for local metadata
 	// TODO: command to buy stamps and check if stamp they are usable
 	// --wait-usable-stamp (keep waiting until bought stamp is ready)
-	return uploader.UploadTarFile(ctx, tarPath, tarFile, api.UploadCollectionOptions{
+	return uploadTarFile(ctx, tarPath, tarFile, api.UploadCollectionOptions{
 		Pin:                 true,
 		BatchID:             batchID,
 		IndexDocumentHeader: "index.html",
@@ -100,10 +101,47 @@ func uploadAllFrom(ctx context.Context, dataDir string, kiwixMirror string, batc
 	filter := func(filename string) bool {
 		return strings.Contains(filename, kiwixMirror)
 	}
-	return uploader.UploadMatchTar(ctx, dataDir, filter, api.UploadCollectionOptions{
+	return uploadMatchTar(ctx, dataDir, filter, api.UploadCollectionOptions{
 		Pin:                 true,
 		BatchID:             batchID,
 		IndexDocumentHeader: "index.html",
 		ErrorDocumentHeader: "error.html",
 	})
+}
+
+func uploadMatchTar(ctx context.Context, targetDir string, filter func(x string) bool, opts api.UploadCollectionOptions) (map[string]swarm.Address, error) {
+	files := make(map[string]swarm.Address)
+	err := filepath.Walk(targetDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() && filepath.Ext(info.Name()) == ".tar" && filter(info.Name()) {
+			addr, err := uploadTarFile(ctx, path, info.Name(), opts)
+			if err != nil {
+				return err
+			}
+			files[info.Name()] = addr
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(files) == 0 {
+		log.Println("no tar files found for the given filter")
+	}
+	return files, nil
+}
+
+func uploadTarFile(ctx context.Context, path string, name string, opts api.UploadCollectionOptions) (swarm.Address, error) {
+	buf, err := tarball.ReadTarBuffer(path)
+	if err != nil {
+		return swarm.Address{}, err
+	}
+	tarFile := tarball.NewBufferFile(name, buf)
+	if err := bee.UploadCollection(ctx, tarFile, opts); err != nil {
+		return swarm.Address{}, err
+	}
+	return tarFile.Address(), nil
 }
