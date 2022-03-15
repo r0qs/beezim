@@ -22,3 +22,7 @@ body {
   -webkit-hyphens: auto;
   hyphens: auto;
 }
+
+.accordion-button {
+  text-decoration: none;
+}

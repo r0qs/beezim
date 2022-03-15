@@ -54,7 +54,7 @@ func (a Article) Data() []byte {
 }
 
 type IndexMetadata struct {
-	Title	string
+	Title    string
 	MimeType string
 	Redirect bool
 }
@@ -126,7 +126,7 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 				'I', // Media files
 				'M', // ZIM Metadata
 				'X': // Search indexes (Xapian db)
-				// TODO: when is enable-search true append xapian scripts; exclude it from tar (only keep the asm.data), and modify index template to load the js.
+				// TODO: when is enable-search true append xapian scripts; exclude it from tar (only keep the xapianasm.data), and modify index template to load the js.
 
 				if a.EntryType == zim.RedirectEntry {
 					ridx, err := a.RedirectIndex()
@@ -159,7 +159,7 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 
 				// TODO: add addresses and searchable data
 				idx.AddEntry(a.FullURL(), IndexMetadata{
-					Title:a.Title,
+					Title:    a.Title,
 					MimeType: a.MimeType(),
 					Redirect: a.EntryType == zim.RedirectEntry,
 				})
@@ -324,6 +324,51 @@ func makePage(name, template string, tmplData map[string]interface{}, tarFile st
 	return tarball.AppendTarFile(tarFile, tarball.NewBufferFile(name, buf))
 }
 
+type Node struct {
+	Path     string  `json:"path"`
+	Icon     string  `json:"icon"`
+	MimeType string  `json:"mimeType"`
+	Title    string  `json:"title"`
+	Redirect bool    `json:"redirect"`
+	Nodes    []*Node `json:"nodes"`
+}
+
+func groupDataByPrefix(idxEntries map[string]IndexEntry) map[string]*Node {
+	m := make(map[string]*Node)
+	for p, entry := range idxEntries {
+		n := &Node{
+			Path:     entry.Path,
+			MimeType: entry.Metadata.MimeType,
+			Title:    entry.Metadata.Title,
+			Redirect: entry.Metadata.Redirect,
+			Icon:     "",
+		}
+		var id string
+		switch path.Dir(p)[0] {
+		case '-':
+			id = "Assets"
+		case 'A':
+			id = "Articles"
+		case 'I':
+			id = "Media"
+		case 'M':
+			id = "Metadata"
+		case 'X': // FIXME: remove when add wasm
+			id = "Indexes"
+		}
+
+		if _, ok := m[id]; !ok {
+			m[id] = &Node{
+				Path:  id,
+				Icon:  "", //TODO add icons style
+				Nodes: make([]*Node, 0),
+			}
+		}
+		m[id].Nodes = append(m[id].Nodes, n)
+	}
+	return m
+}
+
 // MakeIndexSearchPage creates a custom index with the text search tool and
 // embed the current main page in the new index.
 func (idx *SwarmWikiIndexer) MakeIndexSearchPage(tarFile string) error {
@@ -340,7 +385,7 @@ func (idx *SwarmWikiIndexer) MakeIndexSearchPage(tarFile string) error {
 	tmplData := map[string]interface{}{
 		"File":        filepath.Base(idx.ZimPath),
 		"Count":       strconv.Itoa(int(idx.Z.ArticleCount)),
-		"Articles":    idx.entries, // TODO: browse list of existent articles
+		"Articles":    groupDataByPrefix(idx.entries),
 		"HasMainPage": (mainURL != ""),
 		"MainURL":     mainURL,
 	}
@@ -357,11 +402,11 @@ func (idx *SwarmWikiIndexer) MakeIndexSearchPage(tarFile string) error {
 
 	// make files page in JSON format
 	if file, err := json.Marshal(idx.entries); err == nil {
-		if err = tarball.AppendTarFile(tarFile, tarball.NewBufferFile("files.json", bytes.NewBuffer(file))); err != nil{
+		if err = tarball.AppendTarFile(tarFile, tarball.NewBufferFile("files.json", bytes.NewBuffer(file))); err != nil {
 			return err
 		}
 	}
-	
+
 	// make index page using index-search template
 	return makePage("index.html", "index-search.html", tmplData, tarFile)
 }

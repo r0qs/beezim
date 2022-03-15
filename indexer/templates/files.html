@@ -1,29 +1,49 @@
 {{ define "content" -}}
 <div class="container p-5">
-  <p class="lead">List of all uploaded files extracted from the ZIM: {{ .File }}.<br>It contains {{ .Count }} articles.
+  <p class="lead">List of all uploaded files extracted from the ZIM: {{ .File }}. It contains {{ .Count }} articles.
   </p>
   <!-- TODO: add pagination -->
-  <!-- TODO: display files in a tree view organized by source/article/media/metadata/search index -->
-  <div class="table-responsive">
-    <table class="table table-light table-striped">
-      <thead>
-        <tr>
-          <th>File</th>
-          <th>Mime Type</th>
-          <th>Article Title</th>
-        </tr>
-      <tbody>
-        {{ range $url, $data := .Articles -}}
-        <tr>
-          <td><a href="{{ $url }}" class="truncate-url">{{ $url }}</a></td>
-          <td>{{ $data.Metadata.Title }}</td>
-          <td>{{ $data.Metadata.MimeType }}</td>
-          <td>{{ $data.Metadata.Redirect }}</td>
-        </tr>
-        {{ end -}}
-      </tbody>
-      </thead>
-    </table>
+  <div class="accordion mt-5" id="accordionArticles">
+    {{ range $id, $data := .Articles -}}
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="heading-{{ $id }}">
+        <a href="" class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#el-{{ $id }}"
+          aria-expanded="false" aria-controls="el-{{ $id }}">{{ $id }}</a>
+      </h2>
+      <div id="el-{{ $id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ $id }}"
+        data-bs-parent="#accordionArticles">
+        <div class="accordion-body">
+          <div class="table-responsive-lg">
+            <table class="table table-light table-hover">
+              <thead>
+                <tr>
+                  <th>File</th>
+                  {{ if eq $id "Articles" -}}
+                  <th>Article Title</th>
+                  {{ end -}}
+                  <th>Mime Type</th>
+                  <th>Redirect</th>
+                </tr>
+              <tbody>
+                {{ range $field := $data.Nodes -}}
+                <tr>
+                  {{ $length := len $field.Path -}}
+                  <td><a href="{{ $field.Path }}" class="{{ if gt $length 30 }}truncate-url{{ end }}">{{ $field.Path }}</a></td>
+                  {{ if eq $id "Articles" -}}
+                  <td>{{ $field.Title -}}</td>
+                  {{ end -}}
+                  <td>{{ $field.MimeType -}}</td>
+                  <td>{{ $field.Redirect -}}</td>
+                </tr>
+                {{ end -}}
+              </tbody>
+              </thead>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{ end -}}
   </div>
 </div>
 {{ end -}}
