@@ -26,3 +26,52 @@ body {
 .accordion-button {
   text-decoration: none;
 }
+
+.inline {
+  display: inline-block !important;
+}
+#searchButton {
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+#typeahead-suggestions {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  width: 30%;
+  
+  border-right: 1px black solid;
+  border-left: 1px black solid;
+  background:rgb(240, 234, 234);
+  margin-top: 8px;
+}
+ 
+.suggestion-link {
+  color: black;
+  text-decoration: none;
+}
+
+.suggestion-text {
+  border-bottom: 1px black solid;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+  padding-left: 0.2em;
+  margin-bottom: 0;
+}
+
+.suggestion-link:first-child p {
+  border-top: 1px black solid;
+}
+.suggestion-text:hover {
+  background: rgb(175, 167, 167);
+}
+
+#searchInput {
+  width: 60%;
+}
+
+#rightPart {
+  display: block;
+  width: 33% !important;
+}

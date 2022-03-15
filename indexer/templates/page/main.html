@@ -29,10 +29,16 @@
 					<a class="nav-link" href="#" id="randomArticle">Random Article</a>
 				</li>
 			</ul>
-			<form class="d-flex">
-				<input id="searchInput" class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-				<button id="searchButton" class="btn btn-outline-dark" type="submit">Search</button>
-			</form>
+			<div id="rightPart">
+				<input autocomplete="off" id="searchInput" class="inline" type="search" placeholder="Search" aria-label="Search">
+				<button id="searchButton" class="btn btn-outline-dark inline" type="submit">Search</button>
+				<ul class="navbar-nav mb-2 mb-md-0 inline" >
+					<li class="nav-item">
+						<a class="nav-link" href="#" id="randomArticle">Random Article</a>
+					</li>
+				</ul>
+				<div id="typeahead-suggestions"></div>
+			</div>
 		</div>
 	</div>
 </nav>

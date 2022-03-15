@@ -5,16 +5,29 @@
 <script>
 	var Searcher = new BeeZIMSearcher();
 	Searcher.articles = [{"Path":"A/Lock_and_key_theory","Metadata":{"MimeType":"","Title":"Lock and key theory"}},{"Path":"A/Lodnon","Metadata":{"MimeType":"","Title":""}},{"Path":"A/Londain","Metadata":{"MimeType":"","Title":""}}];
+	var searchResultsBox = document.getElementById("typeahead-suggestions");
+	function handleSearch(query, max) {
+		searchResultsBox.innerHTML = '';
+		let result = Searcher.Search(query);
+		let maxResults = max == undefined ? result.length : Math.min(max,result.length);
+		for(let i = 0; i < maxResults; i++) {
+			searchResultsBox.innerHTML +=
+				getSuggestionLink(result[i].data,result[i].title);
+		}
+	}
+	function getSuggestionLink(path,title) {
+		return '<a class="suggestion-link" target="iframe-container" href="'+
+					path+'"><p class="suggestion-text">'+
+					title+'</p></a>';
+	}
 	document.getElementById("randomArticle").onclick = function(e) {
-		let rnd = Searcher.GetRandomArticle();
-		console.log("Send me to ");
-		console.log(rnd)
+		document.getElementById("iframe-container").src = Searcher.GetRandomArticle().Path;
 	}
 	document.getElementById("searchButton").onclick = function(e) {
-		console.log(Searcher.Search(document.getElementById("searchInput").value));
+		handleSearch(document.getElementById("searchInput").value);
 	}
 	document.getElementById("searchInput").addEventListener("keyup",function(e) {
-		console.log(Searcher.Search(this.value));
+		handleSearch(this.value, 10);
 	});
 </script>
 {{ end }}
