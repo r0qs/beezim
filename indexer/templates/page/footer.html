@@ -2,4 +2,19 @@
 <script src="assets/js/jquery-3.6.0.min.js" type="text/javascript"></script>
 <script src="assets/js/bootstrap.bundle.min.js" type="text/javascript"></script>
 <script src="assets/js/beezim.js" type="text/javascript"></script>
+<script>
+	var Searcher = new BeeZIMSearcher();
+	Searcher.articles = [{"Path":"A/Lock_and_key_theory","Metadata":{"MimeType":"","Title":"Lock and key theory"}},{"Path":"A/Lodnon","Metadata":{"MimeType":"","Title":""}},{"Path":"A/Londain","Metadata":{"MimeType":"","Title":""}}];
+	document.getElementById("randomArticle").onclick = function(e) {
+		let rnd = Searcher.GetRandomArticle();
+		console.log("Send me to ");
+		console.log(rnd)
+	}
+	document.getElementById("searchButton").onclick = function(e) {
+		console.log(Searcher.Search(document.getElementById("searchInput").value));
+	}
+	document.getElementById("searchInput").addEventListener("keyup",function(e) {
+		console.log(Searcher.Search(this.value));
+	});
+</script>
 {{ end }}
