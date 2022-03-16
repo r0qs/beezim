@@ -24,11 +24,6 @@
 					<a class="nav-link" href="https://github.com/r0qs/beezim">Github</a>
 				</li>
 			</ul>
-			<ul class="navbar-nav mb-2 mb-md-0">
-				<li class="nav-item" style="float:right">
-					<a class="nav-link" href="#" id="randomArticle">Random Article</a>
-				</li>
-			</ul>
 			<div id="rightPart">
 				<input autocomplete="off" id="searchInput" class="inline" type="search" placeholder="Search" aria-label="Search">
 				<button id="searchButton" class="btn btn-outline-dark inline" type="submit">Search</button>
@@ -43,7 +38,7 @@
 	</div>
 </nav>
 
-<main>
+<main id="main">
 	{{ template "content" . }}
 </main>
 {{ end }}
