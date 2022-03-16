@@ -42,7 +42,6 @@ func parse(dataDir string, zimFile string) error {
 
 	// Parse zim file
 	zimArticles := sidx.ParseZIM()
-	// TODO: kill the parser goroutine is there is nothing to do: zim was already parsed.
 
 	if optionExtractOnly {
 		outputDir := filepath.Join(optionDataDir, dirName)
@@ -61,6 +60,11 @@ func parse(dataDir string, zimFile string) error {
 			if err := sidx.MakeIndexSearchPage(tarFile); err != nil {
 				return fmt.Errorf("Failed to copy index.html page to tar file: %v", err)
 			}
+
+			// Append assets
+			if err := indexer.AddAssets(tarFile); err != nil {
+				return fmt.Errorf("Failed to copy assets directory to tar file %v", err)
+			}
 		} else {
 			// Append redirected index page
 			if err := sidx.MakeRedirectIndexPage(tarFile); err != nil {
@@ -71,11 +75,6 @@ func parse(dataDir string, zimFile string) error {
 		// Append 404 page
 		if err := sidx.MakeErrorPage(tarFile); err != nil {
 			return fmt.Errorf("Failed to copy error.html page to tar file: %v", err)
-		}
-
-		// Append assets
-		if err := indexer.AddAssets(tarFile); err != nil {
-			return fmt.Errorf("Failed to copy assets directory to tar file %v", err)
 		}
 	}
 
