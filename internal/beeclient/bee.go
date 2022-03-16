@@ -22,18 +22,6 @@ import (
 	"github.com/ethersphere/bee/pkg/swarm"
 )
 
-type BeeClientService interface {
-	DownloadChunk(ctx context.Context, addr swarm.Address, targets ...string) (io.ReadCloser, error)
-	UploadChunk(ctx context.Context, data []byte, o api.UploadOptions) (swarm.Address, error)
-	DownloadBytes(ctx context.Context, addr swarm.Address) (io.ReadCloser, error)
-	UploadBytes(ctx context.Context, data io.Reader, o api.UploadOptions) (swarm.Address, error)
-	UploadCollection(ctx context.Context, f *tarball.File, o api.UploadCollectionOptions) (err error)
-	DownloadManifestFile(ctx context.Context, addr swarm.Address, path string) (size int64, hash []byte, err error)
-	Addresses(ctx context.Context) (debugapi.Addresses, error)
-	CreatePostageBatch(ctx context.Context, amount int64, depth uint64, label string, o debugapi.PostageOptions) (string, error)
-	PostageBatches(ctx context.Context) ([]debugapi.PostageStampResponse, error)
-}
-
 type ClientOptions struct {
 	APIURL              *url.URL
 	APIInsecureTLS      bool
@@ -45,8 +33,6 @@ type BeeClient struct {
 	api   *api.Api
 	debug *debugapi.DebugAPI
 }
-
-var _ BeeClientService = (*BeeClient)(nil)
 
 func NewBee(opts ClientOptions) (c *BeeClient, err error) {
 	c = &BeeClient{}
@@ -127,6 +113,21 @@ func (c *BeeClient) DownloadManifestFile(ctx context.Context, addr swarm.Address
 	}
 
 	return size, h.Sum(nil), nil
+}
+
+func (c *BeeClient) DownloadManifestBytes(ctx context.Context, a swarm.Address, path string) ([]byte, error) {
+	r, err := c.api.Dirs.Download(ctx, a, path)
+	if err != nil {
+		return nil, fmt.Errorf("download manifest %s: %w", path, err)
+	}
+	defer r.Close()
+
+	buf, err := io.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("download manifest %s: %w", path, err)
+	}
+
+	return buf, nil
 }
 
 func (c *BeeClient) Addresses(ctx context.Context) (debugapi.Addresses, error) {

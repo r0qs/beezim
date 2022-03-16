@@ -21,7 +21,7 @@ const (
 
 var (
 	baseDir string
-	bee     beeclient.BeeClientService
+	bee     *beeclient.BeeClient
 )
 
 var (
