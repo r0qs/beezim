@@ -115,8 +115,8 @@ func (c *BeeClient) DownloadManifestFile(ctx context.Context, addr swarm.Address
 	return size, h.Sum(nil), nil
 }
 
-func (c *BeeClient) DownloadManifestBytes(ctx context.Context, a swarm.Address, path string) ([]byte, error) {
-	r, err := c.api.Dirs.Download(ctx, a, path)
+func (c *BeeClient) DownloadManifestBytes(ctx context.Context, addr swarm.Address, path string) ([]byte, error) {
+	r, err := c.api.Dirs.Download(ctx, addr, path)
 	if err != nil {
 		return nil, fmt.Errorf("download manifest %s: %w", path, err)
 	}

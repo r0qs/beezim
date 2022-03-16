@@ -59,11 +59,11 @@ type IndexMetadata struct {
 	Redirect bool
 }
 
-type SwarmWikiIndexer struct {
+type SwarmZimIndexer struct {
 	mu      sync.Mutex
 	ZimPath string
 	Z       *zim.ZimReader
-	entries map[string]IndexEntry // RELATIVE_PATH or ArticleID -> METADATA ?
+	entries map[string]IndexEntry
 }
 
 // TODO: store root in a local kv db pointing to the metadata in swarm
@@ -74,20 +74,20 @@ type IndexEntry struct {
 	Metadata IndexMetadata
 }
 
-func New(zimPath string) (*SwarmWikiIndexer, error) {
+func New(zimPath string) (*SwarmZimIndexer, error) {
 	z, err := zim.NewReader(zimPath, false)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SwarmWikiIndexer{
+	return &SwarmZimIndexer{
 		ZimPath: zimPath,
 		Z:       z,
 		entries: make(map[string]IndexEntry),
 	}, nil
 }
 
-func (idx *SwarmWikiIndexer) AddEntry(entryPath string, metadata IndexMetadata) {
+func (idx *SwarmZimIndexer) AddEntry(entryPath string, metadata IndexMetadata) {
 	idx.mu.Lock()
 	defer idx.mu.Unlock()
 
@@ -97,11 +97,11 @@ func (idx *SwarmWikiIndexer) AddEntry(entryPath string, metadata IndexMetadata) 
 	}
 }
 
-func (idx *SwarmWikiIndexer) Entries() map[string]IndexEntry {
+func (idx *SwarmZimIndexer) Entries() map[string]IndexEntry {
 	return idx.entries
 }
 
-func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
+func (idx *SwarmZimIndexer) ParseZIM() chan Article {
 	zimArticles := make(chan Article)
 	go func() {
 		defer close(zimArticles)
@@ -125,8 +125,9 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 				'A', // Text files (Article Format)
 				'I', // Media files
 				'M', // ZIM Metadata
-				'X': // Search indexes (Xapian db)
-				// TODO: when is enable-search true append xapian scripts; exclude it from tar (only keep the xapianasm.data), and modify index template to load the js.
+				'X': // Search indexes (Xapian DB)
+				//FIXME: handle cases where the zim file was created without xapian
+				// https://github.com/openzim/libzim/blob/11258f9e624d5b288610b7dc6752b62a0af317c2/README.md#compilation
 
 				if a.EntryType == zim.RedirectEntry {
 					ridx, err := a.RedirectIndex()
@@ -157,7 +158,6 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 					data: data,
 				}
 
-				// TODO: add addresses and searchable data
 				idx.AddEntry(a.FullURL(), IndexMetadata{
 					Title:    a.Title,
 					MimeType: a.MimeType(),
@@ -177,7 +177,7 @@ func (idx *SwarmWikiIndexer) ParseZIM() chan Article {
 	return zimArticles
 }
 
-func (idx *SwarmWikiIndexer) UnZim(outputDir string, files <-chan Article) error {
+func (idx *SwarmZimIndexer) UnZim(outputDir string, files <-chan Article) error {
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(outputDir, 0755); err != nil {
 			return err
@@ -209,7 +209,7 @@ func (idx *SwarmWikiIndexer) UnZim(outputDir string, files <-chan Article) error
 	return nil
 }
 
-func (idx *SwarmWikiIndexer) TarZim(tarFile string, files <-chan Article) error {
+func (idx *SwarmZimIndexer) TarZim(tarFile string, files <-chan Article) error {
 	f, err := os.Create(tarFile)
 	if err != nil {
 		return err
@@ -258,7 +258,7 @@ func buildRedirectPage(pagePath string) (*bytes.Buffer, error) {
 
 // MakeRedirectIndexPage creates an redirect index to the main page
 // when it exists in the zim archive.
-func (idx *SwarmWikiIndexer) MakeRedirectIndexPage(tarFile string) error {
+func (idx *SwarmZimIndexer) MakeRedirectIndexPage(tarFile string) error {
 	log.Printf("Appending redirect index.html to %s", filepath.Base(tarFile))
 
 	mainPage, err := idx.Z.MainPage()
@@ -353,7 +353,7 @@ func groupDataByPrefix(idxEntries map[string]IndexEntry) map[string]*Node {
 			id = "Media"
 		case 'M':
 			id = "Metadata"
-		case 'X': // FIXME: remove when add wasm
+		case 'X':
 			id = "Indexes"
 		}
 
@@ -371,7 +371,7 @@ func groupDataByPrefix(idxEntries map[string]IndexEntry) map[string]*Node {
 
 // MakeIndexSearchPage creates a custom index with the text search tool and
 // embed the current main page in the new index.
-func (idx *SwarmWikiIndexer) MakeIndexSearchPage(tarFile string) error {
+func (idx *SwarmZimIndexer) MakeIndexSearchPage(tarFile string) error {
 	mainPage, err := idx.Z.MainPage()
 	if err != nil {
 		return err
@@ -412,7 +412,7 @@ func (idx *SwarmWikiIndexer) MakeIndexSearchPage(tarFile string) error {
 }
 
 // MakeErrorPage creates an error page
-func (idx *SwarmWikiIndexer) MakeErrorPage(tarFile string) error {
+func (idx *SwarmZimIndexer) MakeErrorPage(tarFile string) error {
 	data, err := fs.ReadFile(templateFS, "templates/error.html")
 	if err != nil {
 		return err
