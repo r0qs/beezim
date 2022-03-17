@@ -1,27 +1,66 @@
 {{ define "content" -}}
-<div class="container p-5">
+<div class="container p-1">
   <h2>Search results for query: <span id="query" style="font-weight: bold"></span></h2>
-  <ol id="searchresult">
-
+  <ul id="pagination" class="pagination"></ul>
+  <ol class="list-group" id="searchresult">
   </ol>
 </div>
 <script>
   let searchresult = document.getElementById("searchresult");
+  let pagination = document.getElementById("pagination");
+  let maxElemPerPage = 8;
+  let cutTextAfter = 300;
+  var currPage = 1;
   document.addEventListener('DOMContentLoaded', async function(e) {
     let query = decodeURIComponent(window.location.search.substring(3));
     document.getElementById("searchInput").value = query;
     document.getElementById("query").innerHTML = query;
     Searcher = await BeeZIMSearcher.Init("./X/fulltext/xapian");
-		if (Searcher) {
-      let result = Searcher.IndexSearch(query);
-      for (let i = 0; i < result.length; i++) {
-        let text = await Searcher.GetTextContent(result[i].data)
-        searchresult.innerHTML += "<li><a href='"+result[i].data+"'>"+
-          result[i].title+"</a>. Wordcount: "+result[i].wordcount+
-          "<br>"+text.substring(0,275)+".....</li>";
-      }
+		if (!Searcher)
+      return;
+    let result = Searcher.IndexSearch(query);
+    for (let i = 0; i < result.length; i++) {
+      let text = await Searcher.GetTextContent(result[i].data)
+      let page = ((i / maxElemPerPage) << 0) + 1
+      searchresult.innerHTML += "<li class='list-group-item' page='"+page+"' "+
+      (page == 1 ? "" : "style='display:none'")+"><a href='"+result[i].data+"'>"+
+        result[i].title+"</a>. "+new Intl.NumberFormat().format(result[i].wordcount)+
+        " words.<br>"+text.substring(0,cutTextAfter)+".....</li>";
     }
+    pages = ((result.length / maxElemPerPage) << 0) + 1;
+    pagination.innerHTML = "<li class='page-item'><a class='page-link'>#Show all</a></li>"+
+      "<li class='page-item'><a class='page-link'>Previous</a></li>";
+    for (let j = 1; j <= pages; j++){
+      pagination.innerHTML += "<li class='page-item"+
+      (j != 1 ? "'" : " active'")+"><a class='page-link'>"+j+"</a></li>";
+    }
+    pagination.innerHTML += "<li class='page-item'><a class='page-link'>Next</a></li>";
 
-});
+  });
+
+  pagination.addEventListener("click", function(e) {
+    let target = e.srcElement.innerText;
+    if (target == "#Show all") {
+      currPage = "#Show all";
+    } else if (target == "Previous") {
+      currPage = Math.max(currPage-1,1) || 1;
+    } else if(target == "Next") {
+      currPage = Math.min(currPage+1,pages) || 1;
+    } else if (!isNaN(target)) {
+      currPage = target << 0;
+    } else {
+      return
+    }
+    pagination.querySelectorAll("li").forEach((p) => {(p.innerText == currPage) ? p.classList.add("active"): p.classList.remove("active");});
+    let results = searchresult.querySelectorAll("li");
+    results.forEach((elm) => {
+      if (currPage != "#Show all" && elm.getAttribute("page") != currPage) {
+        elm.style.display = "none";
+      } else {
+        elm.style.display = "block";
+      }
+    });
+  })
+  
 </script>
 {{ end -}}

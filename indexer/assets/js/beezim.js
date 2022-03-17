@@ -46,8 +46,10 @@ class BeeZIMSearcher {
 		// Note: /data is created and mounted on the pre.js included in the compiled code.
 		const xapianIDBFSPath = "/data/xapian";
 		return new Promise(async function (resolve, reject) {
-			if (BeeZIMSearcher.#beeZim)
+			if (BeeZIMSearcher.#beeZim) {
+				console.log("RETURNING OLD BEEZIM!")
 				resolve(BeeZIMSearcher.#beeZim);
+			}
 			try {
 				const opts = {
 					mimeType: "application/octet-stream+xapian",

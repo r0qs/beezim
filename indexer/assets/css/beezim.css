@@ -75,3 +75,15 @@ body {
   display: block;
   width: 33% !important;
 }
+
+#searchresult li.list-group-item a {
+  font-size: large;
+}
+
+#pagination {
+  margin-bottom: 0.2em;
+}
+
+#pagination li:hover {
+  cursor: pointer;
+}

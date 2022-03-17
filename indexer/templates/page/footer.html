@@ -47,7 +47,7 @@
 			}
 
 			document.getElementById("searchInput").addEventListener("keyup", function (e) {
-				if (e.code == "Enter") {
+				if (e.key == "Enter") {
 					location.href = "searchresult.html?q="+encodeURIComponent(this.value);
 					return;
 				}
