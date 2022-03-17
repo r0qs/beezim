@@ -1,0 +1,31 @@
+version: "3.7"
+services:
+  zxsgen:
+    image: ghcr.io/r0qs/zxs:latest
+    working_dir: /home/emscripten/zxs
+    command: ["/bin/sh", "-c", "npm run build && npm run preparelib"]
+    volumes:
+      - type: bind
+        source: ./indexer/assets/js/xapian
+        target: /home/emscripten/zxs/dist
+
+  beezim:
+    depends_on:
+      zxsgen:
+        condition: service_completed_successfully
+    build:
+      context: "."
+      dockerfile: Dockerfile
+    working_dir: /src
+    network_mode: host
+    volumes:
+      - type: bind
+        source: ./.env
+        target: /src/.env
+        read_only: true
+      - type: bind
+        source: ./datadir
+        target: /src/datadir
+      - type: bind
+        source: ./indexer/assets/js/xapian
+        target: /src/indexer/assets/js/xapian

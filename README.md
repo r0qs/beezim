@@ -111,3 +111,14 @@ go run cli/main.go mirror --kiwix=gutenberg --zim=gutenberg_af_all_2022-03.zim -
 ```
 go run cli/main.go mirror --kiwix=others --zim=alpinelinux_en_all_nopic_2021-03.zim --bee-api-url=http://localhost:1733 --bee-debug-api-url=http://localhost:1735 --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0
 ```
+
+# Using docker
+
+```
+docker-compose -f docker-compose.yml build
+```
+
+```
+docker-compose run --rm --user $(id -u):$(id -g) beezim ./bin/beezim-cli mirror --zim=wikipedia_es_climate_change_mini_2022-02.zim --bee-api-url=http://localhost:1633 --bee-debug-api-url=http://localhost:1635 --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 --enable-search
+```
+TODO: make script for easy run.

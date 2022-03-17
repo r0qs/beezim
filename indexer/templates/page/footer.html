@@ -3,7 +3,7 @@
 <script src="assets/js/bootstrap.bundle.min.js" type="text/javascript"></script>
 
 <script>var exports = {};</script>
-<script src="assets/js/xapian/rmmxapianapi.js" type="text/javascript"></script>
+<script src="assets/js/xapian/xapianapi.js" type="text/javascript"></script>
 <script src="assets/js/xapian/xapianasm.js" type="text/javascript"></script>
 <script src="assets/js/beezim.js" type="text/javascript"></script>
 <script type="text/javascript">
@@ -22,7 +22,7 @@
 			function handleSearch(query, max) {
 				searchResultsBox.innerHTML = '';
 				console.log("Ensure that searcher was initialized")
-				let result = Searcher.Search(query); // fiXME
+				let result = Searcher.Search(query);
 				let maxResults = max == undefined ? result.length : Math.min(max, result.length);
 				for (let i = 0; i < maxResults; i++) {
 					searchResultsBox.innerHTML +=
@@ -53,16 +53,12 @@
 
 			document.getElementById("iframe-zim").onload = function (e) {
 				searchResultsBox.innerHTML = "";
-				console.log("outside")
 				this.contentWindow.document.body.onclick = function () {
-					console.log("inside")
 					searchResultsBox.innerHTML = "";
 				}
 			}
 
 			window.addEventListener("click", function (e) {
-				console.log("window click")
-				console.log(e.target)
 				if (e.target.id !== "searchButton") {
 					searchResultsBox.innerHTML = "";
 				}

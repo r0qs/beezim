@@ -1,0 +1,5 @@
+bee_data_root
+datadir
+notes
+*.md
+**/.git
