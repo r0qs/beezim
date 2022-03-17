@@ -1,9 +1,14 @@
 {{ define "content" -}}
 <div class="container p-1">
-  <h2>Search results for query: <span id="query" style="font-weight: bold"></span></h2>
-  <ul id="pagination" class="pagination"></ul>
-  <ol class="list-group" id="searchresult">
-  </ol>
+  <h2>
+    Search results for query: <span id="query" style="font-weight: bold"></span>
+  </h2>
+  <ul id="pagination" class="pagination">
+    <li class='page-item'><a class='page-link'>#Show all</a></li>
+    <li class='page-item'><a class='page-link'>Previous</a></li>
+    <li class='page-item'><a class='page-link'>Next</a></li>
+  </ul>
+  <ol class="list-group" id="searchresult"></ol>
 </div>
 <script>
   let searchresult = document.getElementById("searchresult");
@@ -15,27 +20,26 @@
     let query = decodeURIComponent(window.location.search.substring(3));
     document.getElementById("searchInput").value = query;
     document.getElementById("query").innerHTML = query;
-    Searcher = await BeeZIMSearcher.Init("./X/fulltext/xapian");
-		if (!Searcher)
-      return;
-    let result = Searcher.IndexSearch(query);
-    for (let i = 0; i < result.length; i++) {
-      let text = await Searcher.GetTextContent(result[i].data)
-      let page = ((i / maxElemPerPage) << 0) + 1
-      searchresult.innerHTML += "<li class='list-group-item' page='"+page+"' "+
-      (page == 1 ? "" : "style='display:none'")+"><a href='"+result[i].data+"'>"+
-        result[i].title+"</a>. "+new Intl.NumberFormat().format(result[i].wordcount)+
-        " words.<br>"+text.substring(0,cutTextAfter)+".....</li>";
-    }
-    pages = ((result.length / maxElemPerPage) << 0) + 1;
-    pagination.innerHTML = "<li class='page-item'><a class='page-link'>#Show all</a></li>"+
-      "<li class='page-item'><a class='page-link'>Previous</a></li>";
-    for (let j = 1; j <= pages; j++){
-      pagination.innerHTML += "<li class='page-item"+
-      (j != 1 ? "'" : " active'")+"><a class='page-link'>"+j+"</a></li>";
-    }
-    pagination.innerHTML += "<li class='page-item'><a class='page-link'>Next</a></li>";
-
+    let srch = async function(){
+      let result = Searcher.IndexSearch(query);
+      for (let i = 0; i < result.length; i++) {
+        let text = await Searcher.GetTextContent(result[i].data)
+        let page = ((i / maxElemPerPage) << 0) + 1
+        searchresult.innerHTML += "<li class='list-group-item' page='"+page+"' "+
+        (page == 1 ? "" : "style='display:none'")+"><a href='index.html?s="+result[i].data+"'>"+
+          result[i].title+"</a>. "+new Intl.NumberFormat().format(result[i].wordcount)+
+          " words.<br>"+text.substring(0,cutTextAfter)+".....</li>";
+      }
+      pages = ((result.length / maxElemPerPage) << 0) + 1;
+      for (let j = 1; j <= pages; j++){
+        pagination.innerHTML += "<li class='page-item"+
+        (j != 1 ? "'" : " active'")+"><a class='page-link'>"+j+"</a></li>";
+      }
+    };
+    if (Searcher)
+      srch.apply();
+    else
+      BeeZIMSearcher.searcherReady.push(srch);
   });
 
   pagination.addEventListener("click", function(e) {
@@ -61,6 +65,5 @@
       }
     });
   })
-  
 </script>
 {{ end -}}
