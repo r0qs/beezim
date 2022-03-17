@@ -155,25 +155,25 @@ func Tar(sourceDir string, tarFile string) error {
 			return err
 		}
 
-		if baseDir != "" {
-			hdr.Name = filepath.Join(baseDir, strings.TrimPrefix(path, sourceDir))
-		}
-
+		hdr.Name = filepath.Join(baseDir, strings.TrimPrefix(path, sourceDir))
 		if err := tw.WriteHeader(hdr); err != nil {
 			return err
 		}
 
-		if !info.IsDir() {
-			file, err := os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
+		// skip write if is not a regular file
+		if !info.Mode().IsRegular() {
+			return nil
+		}
 
-			_, err = io.Copy(tw, file)
-			if err != nil {
-				return err
-			}
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		_, err = io.Copy(tw, file)
+		if err != nil {
+			return err
 		}
 
 		return nil

@@ -41,8 +41,9 @@ func init() {
 }
 
 type Article struct {
-	path string
-	data []byte
+	path  string
+	isDir bool
+	data  []byte
 }
 
 func (a Article) Path() string {
@@ -153,9 +154,15 @@ func (idx *SwarmZimIndexer) ParseZIM() chan Article {
 					}
 				}
 
+				dir, err := filepath.Rel(filepath.Dir(a.FullURL()), a.FullURL())
+				if err != nil {
+					return
+				}
+
 				zimArticles <- Article{
-					path: a.FullURL(),
-					data: data,
+					path:  a.FullURL(),
+					data:  data,
+					isDir: dir == ".",
 				}
 
 				idx.AddEntry(a.FullURL(), IndexMetadata{
@@ -224,8 +231,19 @@ func (idx *SwarmZimIndexer) TarZim(tarFile string, files <-chan Article) error {
 			Size: int64(len(file.data)),
 		}
 
+		if file.isDir {
+			hdr.Typeflag = tar.TypeDir
+		} else {
+			hdr.Typeflag = tar.TypeReg
+		}
+
 		if err := tw.WriteHeader(hdr); err != nil {
 			return err
+		}
+
+		// skip write if it is directory
+		if file.isDir {
+			continue
 		}
 
 		if _, err := tw.Write(file.data); err != nil {
