@@ -147,7 +147,7 @@ class BeeZIMSearcher {
 		return titleResults.concat(results);
 	}
 
-	GetTextContent(url) {
+	async GetTextContent(url) {
 		const htmlContent = await asyncFetch("GET", url);
 		let tmp = document.createElement("DIV");
 		tmp.innerHTML = htmlContent;

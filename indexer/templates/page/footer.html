@@ -21,7 +21,6 @@
 			var searchResultsBox = document.getElementById("typeahead-suggestions");
 			function handleSearch(query, max) {
 				searchResultsBox.innerHTML = '';
-				console.log("Ensure that searcher was initialized")
 				let result = Searcher.Search(query);
 				let maxResults = max == undefined ? result.length : Math.min(max, result.length);
 				for (let i = 0; i < maxResults; i++) {
@@ -44,10 +43,15 @@
 			}
 
 			document.getElementById("searchButton").onclick = function (e) {
-				handleSearch(document.getElementById("searchInput").value);
+				location.href = "searchresult.html?q="+
+					encodeURIComponent(document.getElementById("searchInput").value);
 			}
 
 			document.getElementById("searchInput").addEventListener("keyup", function (e) {
+				if (e.code == "Enter") {
+					location.href = "searchresult.html?q="+encodeURIComponent(this.value);
+					return;
+				}
 				handleSearch(this.value, 10);
 			});
 
