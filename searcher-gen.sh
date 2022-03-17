@@ -16,7 +16,7 @@ docker pull ghcr.io/r0qs/zxs:latest
 docker run -it --rm --name zxs-searcher-0 \
 	--user $(id -u):$(id -g) \
 	--mount "type=bind,src=${assets_dir},dst=${ZXS_HOME}/dist" \
-	zxs --entrypoint sh -c "npm run build && npm run preparelib"
+	zxs --entrypoint sh -c "npm run build && npm run prepare-lib"
 
 # Build beezim image
 docker build -t beezim -f Dockerfile .
