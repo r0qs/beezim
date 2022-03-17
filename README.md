@@ -1,26 +1,41 @@
-# BeeZIM Mirror
+# BeeZIM Mirror Tool
 
 This repository provides tools to publish copies of entire websites on Swarm.
 
 Thankfully to [OpenZIM Project](https://wiki.openzim.org/wiki/OpenZIM), which is currently maintained by a not-for-profit entity named [Kiwix](https://www.kiwix.org/en/), websites can be highly compressed into a single file and easily shared by users or viewed in devices with very limited computational resources. 
 
-The compressed files follow the [ZIM file format](https://wiki.openzim.org/wiki/ZIM_file_format), and according to Kiwix, the entire Wikipedia can be compressed in an 80Gb zim file, containing more than 6 million articles, with images!
+The compressed files follow the [ZIM file format](https://wiki.openzim.org/wiki/ZIM_file_format), and according to Kiwix the entire Wikipedia can be compressed in an 80Gb zim file, containing more than 6 million articles, with images!
 The main purpose of Zim file format is to store websites content for offline usage.
 
-Our goal is to use the zim files to mirror websites on decentralized storage like [Swarm](https://www.ethswarm.org/), providing censorship resistance to the websites that we love so much, like [Wikipedia](https://www.wikipedia.org/) and [Project Gutenberg](https://www.gutenberg.org/). We want to make a version of the [Internet Archive](https://archive.org/web/) that cannot be censored.
-
+Our goal is to use the zim files to mirror websites on decentralized storages like [Swarm](https://www.ethswarm.org/), providing censorship resistance to the websites that we love so much, like [Wikipedia](https://www.wikipedia.org/) and [Project Gutenberg](https://www.gutenberg.org/). We want to make a version of the [Internet Archive](https://archive.org/web/) that cannot be censored.
 
 ## How it works
 
-// TODO: explain how it works
+Beezim is a command-line tool that uses the [Bee](https://github.com/ethersphere/bee) API to upload content on Swarm.
+Files in the ZIM format can be downloaded from a web2 mirror website or provided by the user if it is already stored locally.
+The ZIMs are parsed, and a tar archive is generated from them.
 
-Files are downloaded from the zim, parsed and extracted as tar archives
-The parser embeds metadata and a search engine to the archives, and uses swarm as a kv store for indexed data on each mirrored website
-Each metadata file is also uploaded to swarm and queried from the js when searching for articles or words in the main page
-The archives are then uploaded to swarm and its reference (i.e., the manifest address) and the metadata are also stored locally, but not the zims.
-They are deleted after completion of the upload.
+The parser can optionally embed metadata and a search engine to the archives.
+Each tar archive is then uploaded to swarm, and its reference (i.e., the [manifest](https://docs.ethswarm.org/docs/access-the-swarm/upload-a-directory#upload-the-directory-containing-your-website) address) is returned as output. Please keep this stored so you can access your page later on. We plan to provide a key-value store to manage the metadata and references in the future.
 
-Make a ENS entry to the root manifest and point to: https://beezim.bzz.link or https://bzzim.bzz.link
+The search engine can be enabled during the parsing by using the option `--enable-search`.
+And allow users to query for uploaded articles containing data from the text or title of the ZIMs.
+Beezim also embeds a navigation bar and pages to display information about the uploaded files and the project when the search is enabled.
+
+The ZIM and/or tar files can be automatically deleted from the host machine after upload, using the option `--clean`.
+
+The default behavior of Beezim is to `mirror` ZIMs to Swarm as they are, **without** append metadata or the search tool to it.
+However, if you would like to be able to search on the uploaded content in a similar fashion provided by [Kiwix](https://library.kiwix.org/), but without relying on server-side services or database, you can try out our search tool!
+
+Our search tool is called Zim Xapian Searchindex, or [zxs](https://github.com/r0qs/zxs) for short.
+It is a WebAssembly library and javascript search tool that can read the indexes in the [Xapian](https://xapian.org/) format extracted from ZIM files under `X/fulltext/xapian` and `X/title/xapian`.
+
+ZXS enables the search of indexed data in your browser using the Xapian database that is [already embedded in the ZIM files]((https://wiki.openzim.org/wiki/Search_indexes)) without interacting with a server.
+It is based on Xapian search engine library and compiled for WebAssembly using the [Emscripten](https://emscripten.org/) compiler.
+By using *Beezim* search tool, no server can monitor what you are searching for! Everything happens on your browser.
+ZXS could also allow users to search contents without an internet connection,
+embedding the javascript search tool and the WebAssembly engine directly in the ZIM files.
+Although, this is not done yet!
 
 ## How to run
 
@@ -58,13 +73,26 @@ Use "beezim [command] --help" for more information about a command.
 
 // TODO: add description, explain sub commands and add example for each command
 ### Configure the Bee environment
-Bee needs to be installed before using Beezim. See [.env-example](.env-example) for an example of the neccessary configuration parameters.
+
+Beezim uploads files to Swarm by connecting to a bee node.
+But you can use the `--gateway` option to upload directly to the [public swarm gateway](https://gateway.ethswarm.org/).
+However the public gateway has a maximum upload limit of 10 MB per file.
+
+Example using the gateway:
+```
+beezim mirror --zim=wikipedia_cr_all_maxi_2022-02.zim --gateway
+```
+
+For best experience and convenience it is recommended that you run your own bee node before try Beezim.
+See [.env-example](.env-example) for an example of the necessary configuration parameters.
 Create a file named **.env** with configuration parameters for your system.
 
 ### Download ZIM files
 
 ```
-go run cli/main.go download --kiwix=wikipedia --zim=wikipedia_es_climate_change_mini_2022-02.zim 
+beezim download \
+  --kiwix=wikipedia \
+  --zim=wikipedia_es_climate_change_mini_2022-02.zim 
 ```
 
 ### Parse ZIM files and embed a search engine
@@ -72,7 +100,9 @@ go run cli/main.go download --kiwix=wikipedia --zim=wikipedia_es_climate_change_
 This converts the zim files to tar archives and embed information to them (JS, CSS, HTML) and a search engine using the Xapian index.
 
 ```
-go run cli/main.go parse --zim=wikipedia_es_climate_change_mini_2022-02.zim --enable-search
+beezim parse \
+  --zim=wikipedia_es_climate_change_mini_2022-02.zim \
+  --enable-search
 ```
 
 ### Parse ZIM files without embedded search
@@ -80,24 +110,29 @@ go run cli/main.go parse --zim=wikipedia_es_climate_change_mini_2022-02.zim --en
 This converts the zim files to tar archives and embed information to them (JS, CSS, HTML).
 
 ```
-go run cli/main.go parse --zim=wikipedia_es_climate_change_mini_2022-02.zim
+beezim parse --zim=wikipedia_es_climate_change_mini_2022-02.zim
 ```
 
 ### Upload the TAR to Swarm
 
 ```
-go run cli/main.go upload --tar=wikipedia_es_climate_change_mini_2022-02.tar --gateway
-```
-```
-go run cli/main.go upload --tar=wikipedia_es_climate_change_mini_2022-02.tar --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
+beezim upload --tar=wikipedia_es_climate_change_mini_2022-02.tar --gateway
 ```
 
 ```
-go run cli/main.go upload all --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
+beezim upload \
+  --tar=wikipedia_es_climate_change_mini_2022-02.tar \
+  --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
 ```
 
 ```
-go run cli/main.go upload --kiwix="gutenberg" all --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
+beezim upload all \
+  --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
+```
+
+```
+beezim upload --kiwix="gutenberg" all \
+  --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
 ```
 
 ### Mirror
@@ -105,20 +140,39 @@ go run cli/main.go upload --kiwix="gutenberg" all --batch-id=8e747b4aefe21a9c902
 Performs the download `->` parser `->` upload for one or many zims. (not finished yet)
 
 ```
-go run cli/main.go mirror --kiwix=gutenberg --zim=gutenberg_af_all_2022-03.zim --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
+beezim mirror --kiwix=gutenberg \
+  --zim=gutenberg_af_all_2022-03.zim \
+  --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
 ```
 
 ```
-go run cli/main.go mirror --kiwix=others --zim=alpinelinux_en_all_nopic_2021-03.zim --bee-api-url=http://localhost:1733 --bee-debug-api-url=http://localhost:1735 --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0
+beezim mirror --kiwix=others \
+  --zim=alpinelinux_en_all_nopic_2021-03.zim \
+  --bee-api-url=http://localhost:1733 \
+  --bee-debug-api-url=http://localhost:1735 \
+  --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0
 ```
 
-# Using docker
+## Using docker
+
+### Building Beezim without search engine
+
+TODO
+
+### With search engine
+Building the search engine using the xapian web assembly api
+```
+docker-compose -f docker-compose.yml up --build --remove-orphans && docker-compose rm -fsv
+```
 
 ```
-docker-compose -f docker-compose.yml build
-```
-
-```
-docker-compose run --rm --user $(id -u):$(id -g) beezim ./bin/beezim-cli mirror --zim=wikipedia_es_climate_change_mini_2022-02.zim --bee-api-url=http://localhost:1633 --bee-debug-api-url=http://localhost:1635 --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 --enable-search
+docker-compose run --rm \
+  --user $(id -u):$(id -g) \
+  beezim ./bin/beezim-cli mirror \
+  --zim=wikipedia_es_climate_change_mini_2022-02.zim \
+  --bee-api-url=http://localhost:1633 \
+  --bee-debug-api-url=http://localhost:1635 \
+  --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 \
+  --enable-search
 ```
 TODO: make script for easy run.
