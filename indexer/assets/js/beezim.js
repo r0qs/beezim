@@ -31,10 +31,9 @@ function asyncFetch(method, url, opts = {}) {
 class BeeZIMSearcher {
 	#articles = [];
 	#initRan = false;
-	#maxResults = 20;
-	#titleResults = 3;
 	#indexURL;
 	#xapian;
+	static #beeZim;
 
 	constructor(indexURL, xapianPath) {
 		this.#indexURL = indexURL;
@@ -46,8 +45,9 @@ class BeeZIMSearcher {
 	static Init(indexURL) {
 		// Note: /data is created and mounted on the pre.js included in the compiled code.
 		const xapianIDBFSPath = "/data/xapian";
-
 		return new Promise(async function (resolve, reject) {
+			if (BeeZIMSearcher.#beeZim)
+				resolve(BeeZIMSearcher.#beeZim);
 			try {
 				const opts = {
 					mimeType: "application/octet-stream+xapian",
@@ -69,7 +69,8 @@ class BeeZIMSearcher {
 					if (err) {
 						throw err;
 					}
-					return resolve(new BeeZIMSearcher(indexURL, xapianIDBFSPath));
+					BeeZIMSearcher.#beeZim = new BeeZIMSearcher(indexURL, xapianIDBFSPath);
+					return resolve(BeeZIMSearcher.#beeZim);
 				});
 			} catch (err) {
 				reject(err);
@@ -80,8 +81,10 @@ class BeeZIMSearcher {
 	}
 
 	async LoadFiles() {
-		const files = await asyncFetch("GET", "files.json")
-		this.#parseFiles(files);
+		if (this.#articles.length == 0) {
+			const files = await asyncFetch("GET", "files.json")
+			this.#parseFiles(files);
+		}
 	}
 
 	#parseFiles(filesResponse) {
@@ -100,7 +103,30 @@ class BeeZIMSearcher {
 		return this.#articles[this.#articles.length * Math.random() << 0];
 	}
 
-	Search(query) {
+	IndexSearch(query, offset=0, maxResults=1000) {
+		if (!query) {
+			return [];
+		}
+
+		if (!this.#initRan) {
+			return "You need to run 'Init()' before searching!";
+		}
+
+		let results = [];
+
+		this.#xapian.queryXapianIndex(query, offset, maxResults).forEach((r) => {
+			results.push({
+				docid: r.docid,
+				data: r.data,
+				wordcount: parseInt(this.#xapian.getStringValue(r.docid, 1)),
+				title: this.#xapian.getStringValue(r.docid, 0)
+			});
+		});
+
+		return results;
+	}
+
+	QuickSearch(query, 	maxResults = 20, titleMatches = 3) {
 		if (!query) {
 			return [];
 		}
@@ -112,7 +138,7 @@ class BeeZIMSearcher {
 		let results = [];
 		let queryLower = query.toLowerCase();
 
-		this.#xapian.queryXapianIndex(query, 0, this.#maxResults - this.#titleResults).forEach((r) => {
+		this.#xapian.queryXapianIndex(query, 0, maxResults-titleMatches).forEach((r) => {
 			results.push({
 				docid: r.docid,
 				data: r.data,
@@ -120,7 +146,8 @@ class BeeZIMSearcher {
 				title: this.#xapian.getStringValue(r.docid, 0)
 			});
 		});
-		let wantedTitleMatch = this.#maxResults - results.length;
+
+		let wantedTitleMatch = maxResults - results.length;
 		let titleResults = [];
 		for (let i = 0; i < this.#articles.length; i++) {
 			if (wantedTitleMatch <= 0)
@@ -139,9 +166,9 @@ class BeeZIMSearcher {
 			return a.title.length - b.title.length;
 		});
 
-		// Top 3 results are from titleResults
-		if (titleResults.length > this.#titleResults) {
-			return titleResults.slice(0, this.#titleResults).concat(results, titleResults.slice(this.#titleResults))
+		// Top (titleMatches) results are from titleResults
+		if (titleResults.length > titleMatches) {
+			return titleResults.slice(0, titleMatches).concat(results, titleResults.slice(titleMatches))
 		}
 
 		return titleResults.concat(results);

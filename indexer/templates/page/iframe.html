@@ -2,4 +2,12 @@
 <div id="iframe-container" class="container-fluid p-0 m-0">
 	<iframe name="iframe-zim" id="iframe-zim" title="Zim Main Page" height="100%" width="99.8%" src="{{ .MainURL }}"></iframe>
 </div>
+<script>
+	document.getElementById("iframe-zim").onload = function (e) {
+		searchResultsBox.innerHTML = "";
+		this.contentWindow.document.body.onclick = function () {
+			searchResultsBox.innerHTML = "";
+		}
+	}
+</script>
 {{ end }}

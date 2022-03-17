@@ -10,7 +10,7 @@
 	if (!window.indexedDB) {
 		console.log("Your browser doesn't support a stable version of IndexedDB. The embed search engine may not work properly.");
 	}
-
+	var searchResultsBox = document.getElementById("typeahead-suggestions");
 	var Searcher
 	Module.onRuntimeInitialized = async function () {
 		// Pass the relative path of the index to be loaded into the IDBFS
@@ -18,10 +18,9 @@
 		if (Searcher) {
 			await Searcher.LoadFiles();
 
-			var searchResultsBox = document.getElementById("typeahead-suggestions");
 			function handleSearch(query, max) {
 				searchResultsBox.innerHTML = '';
-				let result = Searcher.Search(query);
+				let result = Searcher.QuickSearch(query, max);
 				let maxResults = max == undefined ? result.length : Math.min(max, result.length);
 				for (let i = 0; i < maxResults; i++) {
 					searchResultsBox.innerHTML +=
@@ -52,15 +51,8 @@
 					location.href = "searchresult.html?q="+encodeURIComponent(this.value);
 					return;
 				}
-				handleSearch(this.value, 10);
+				handleSearch(this.value, 13);
 			});
-
-			document.getElementById("iframe-zim").onload = function (e) {
-				searchResultsBox.innerHTML = "";
-				this.contentWindow.document.body.onclick = function () {
-					searchResultsBox.innerHTML = "";
-				}
-			}
 
 			window.addEventListener("click", function (e) {
 				if (e.target.id !== "searchButton") {
