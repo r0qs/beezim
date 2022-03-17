@@ -146,4 +146,20 @@ class BeeZIMSearcher {
 
 		return titleResults.concat(results);
 	}
+
+	GetTextContent(url) {
+		const htmlContent = await asyncFetch("GET", url);
+		let tmp = document.createElement("DIV");
+		tmp.innerHTML = htmlContent;
+		let content = tmp.querySelectorAll("#content p");
+		let str = "";
+		content.forEach((c) => {
+			let cStyle = c.querySelector("style");
+			let out = c.innerText || c.textContent || "";
+			if (cStyle != null)
+				out = out.replace(cStyle.innerText,"");
+			str += out;
+		});
+		return str;
+	}
 }

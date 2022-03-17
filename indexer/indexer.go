@@ -407,6 +407,11 @@ func (idx *SwarmZimIndexer) MakeIndexSearchPage(tarFile string) error {
 		}
 	}
 
+	// make page for displaying search results
+	if err = makePage("searchresult.html", "searchresult.html", tmplData, tarFile); err != nil {
+		return err
+	}
+
 	// make index page using index-search template
 	return makePage("index.html", "index-search.html", tmplData, tarFile)
 }
