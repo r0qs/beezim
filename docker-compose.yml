@@ -3,7 +3,7 @@ services:
   zxsgen:
     image: ghcr.io/r0qs/zxs:latest
     working_dir: /home/emscripten/zxs
-    command: ["/bin/sh", "-c", "npm run build && npm run preparelib"]
+    command: ["/bin/sh", "-c", "npm run build && npm run prepare-lib"]
     volumes:
       - type: bind
         source: ./indexer/assets/js/xapian
