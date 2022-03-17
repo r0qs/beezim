@@ -11,12 +11,16 @@
 		console.log("Your browser doesn't support a stable version of IndexedDB. The embed search engine may not work properly.");
 	}
 	var searchResultsBox = document.getElementById("typeahead-suggestions");
-	var Searcher
+	var Searcher, SearcherReady = new Promise(function(resolve){
+		if (Searcher)
+			resolve();
+	});
 	Module.onRuntimeInitialized = async function () {
 		// Pass the relative path of the index to be loaded into the IDBFS
 		Searcher = await BeeZIMSearcher.Init("./X/fulltext/xapian");
 		if (Searcher) {
 			await Searcher.LoadFiles();
+			Searcher.Ready();
 
 			function handleSearch(query, max) {
 				searchResultsBox.innerHTML = '';
@@ -28,7 +32,13 @@
 				}
 			}
 			function getSuggestionLink(path, title) {
-				return '<a class="suggestion-link" target="iframe-zim" href="' +
+				let iframe = document.getElementById("iframe-zim");
+				if (iframe) {
+					return '<a class="suggestion-link" target="iframe-zim" href="' +
+					path + '"><p class="suggestion-text">' +
+					title + '</p></a>';
+				}
+				return '<a class="suggestion-link" href="index.html?s=' +
 					path + '"><p class="suggestion-text">' +
 					title + '</p></a>';
 			}

@@ -1,3 +1,9 @@
 {{ define "content" -}}
 {{ template "iframe" . -}}
+<script>
+    if (window.location.search.indexOf("?s=") > -1) {
+        let page = decodeURIComponent(window.location.search.substring(3));
+        document.getElementById("iframe-zim").src = page;
+    }
+</script>
 {{ end -}}

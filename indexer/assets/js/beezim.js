@@ -33,6 +33,7 @@ class BeeZIMSearcher {
 	#initRan = false;
 	#indexURL;
 	#xapian;
+	static searcherReady = [];
 	static #beeZim;
 
 	constructor(indexURL, xapianPath) {
@@ -47,7 +48,6 @@ class BeeZIMSearcher {
 		const xapianIDBFSPath = "/data/xapian";
 		return new Promise(async function (resolve, reject) {
 			if (BeeZIMSearcher.#beeZim) {
-				console.log("RETURNING OLD BEEZIM!")
 				resolve(BeeZIMSearcher.#beeZim);
 			}
 			try {
@@ -82,6 +82,12 @@ class BeeZIMSearcher {
 		});
 	}
 
+	Ready() {
+		for(var i = 0; i < BeeZIMSearcher.searcherReady.length; i++) {
+			BeeZIMSearcher.searcherReady[i].apply();
+		}
+	}
+	
 	async LoadFiles() {
 		if (this.#articles.length == 0) {
 			const files = await asyncFetch("GET", "files.json")
