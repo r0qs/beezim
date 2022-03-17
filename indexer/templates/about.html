@@ -4,6 +4,9 @@
     <h1>Welcome to BeeZIM</h1>
     <p class="lead mb-5"> We are uploading copies of entire websites to Swarm!</p>
     <p>
+      BeeZIM is a project made by Racin Nygaard and Rodrigo Q. Saramago for the Swarm WAM event 2022.
+    </p>
+    <p>
       Thankfully to <a href="https://wiki.openzim.org/wiki/OpenZIM">OpenZIM Project</a>, which is currently maintained
       by
       a not-for-profit entity named <a href="https://www.kiwix.org/en/">Kiwix</a>, websites can be highly compressed
@@ -28,8 +31,13 @@
 
   {{ if .HasMainPage -}}
   <div class="d-grid mt-5 col-6 mx-auto">
-    <a class="btn btn-lg btn-outline-dark" href="index.html" role="button">Click here to read this article!</a>
+    <a id="randomArticleBtn" class="btn btn-lg btn-outline-dark" role="button" onClick="GetRandomArticleBtn()">Click here to read a random article!</a>
   </div>
+  <script>
+    function GetRandomArticleBtn() {
+      document.getElementById("randomArticleBtn").setAttribute("href","index.html?s="+Searcher.GetRandomArticle().Path);
+    }
+  </script>
   {{ end -}}
 
 </div>
