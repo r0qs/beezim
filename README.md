@@ -15,7 +15,7 @@ Beezim is a command-line tool that uses the [Bee](https://github.com/ethersphere
 Files in the ZIM format can be downloaded from a web2 mirror website or provided by the user if it is already stored locally.
 The ZIMs are parsed, and a tar archive is generated from them.
 
-The parser can optionally embed metadata and a search engine to the archives.
+The parser can optionally embed metadata, a text search engine and a search DApp to the archives.
 Each tar archive is then uploaded to swarm, and its reference (i.e., the [manifest](https://docs.ethswarm.org/docs/access-the-swarm/upload-a-directory#upload-the-directory-containing-your-website) address) is returned as output. Please keep this stored so you can access your page later on. We plan to provide a key-value store to manage the metadata and references in the future.
 
 The search engine can be enabled during the parsing by using the option `--enable-search`.
@@ -71,7 +71,6 @@ Flags:
 Use "beezim [command] --help" for more information about a command.
 ```
 
-// TODO: add description, explain sub commands and add example for each command
 ### Configure the Bee environment
 
 Beezim uploads files to Swarm by connecting to a bee node.
@@ -153,14 +152,26 @@ beezim mirror --kiwix=others \
   --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0
 ```
 
-## Using docker
+## Using Docker to Build BeeZIM
 
-### Building Beezim without search engine
+### Without search engine
 
-TODO
+If you don't plan to use the search engine and would like to mirror ZIMs as they are.
+You can just install BeeZIM in your machine and use it without the `--enable-search` option,
+or build the BeeZIM docker image (not the docker compose).
 
-### With search engine
-Building the search engine using the xapian web assembly api
+```
+docker build -t beezim -f Dockerfile .
+```
+
+### With the Search Engine and Search DApp Tool
+
+Our search DApp depends on [Zim Xapian Searchindex](https://github.com/r0qs/zxs), a WebAssembly library
+and javascript search tool that can read the search indexes extracted from ZIM files.
+
+We also provide a `docker-compose.yml` to download the ZXS image and build Beezim in your local machine.
+You can use it running the command below:
+
 ```
 docker-compose -f docker-compose.yml up --build --remove-orphans && docker-compose rm -fsv
 ```
@@ -175,4 +186,11 @@ docker-compose run --rm \
   --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 \
   --enable-search
 ```
-TODO: make script for easy run.
+
+There is also a script to simplify a bit the above command when running BeeZIM with docker:
+```
+./dc-beezim-cli mirror \
+  --zim=wikipedia_es_climate_change_mini_2022-02.zim \
+  --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 \
+  --enable-search
+```
