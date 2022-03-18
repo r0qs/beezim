@@ -33,7 +33,7 @@ func cleanDatadir() error {
 	}
 
 	for _, file := range files {
-		action := fmt.Sprintf("delete %s", file.Name())
+		action := fmt.Sprintf("Are you sure you want delete %s?", file.Name())
 		confirmationReader := NewConfirmationInputReader(action, func() error {
 			filePath := filepath.Join(baseDir, file.Name())
 			if file.IsDir() {

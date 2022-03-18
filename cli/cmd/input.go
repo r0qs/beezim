@@ -46,7 +46,7 @@ func NewConfirmationInputReader(action string, do func() error) *ConfirmationInp
 }
 
 func (c ConfirmationInputReader) ReadInput() (string, error) {
-	msg := fmt.Sprintf("Are you sure you want %s ? (y/[n] or q to abort)", c.action)
+	msg := fmt.Sprintf("%s (y/[n] or q to abort)", c.action)
 	answer, err := terminalPrompt(c, msg)
 	if err != nil {
 		return "", err
