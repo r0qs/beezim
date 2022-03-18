@@ -25,7 +25,7 @@ func newParserCmd() *cobra.Command {
 			return fmt.Errorf("zim file not provided")
 		},
 	}
-	cmd.Flags().StringVar(&optionZimFile, optionNameZimFile, "", "path for the zim file")
+	cmd.Flags().StringVar(&optionZimFile, optionNameZimFile, "", "path to the zim file")
 	cmd.Flags().BoolVar(&optionExtractOnly, optionNameExtractOnly, false, "parse and extract the zim file to the datadir")
 
 	return cmd

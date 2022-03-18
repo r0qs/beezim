@@ -111,6 +111,7 @@ func Execute() (err error) {
 		newUploadCmd(),
 		newParserCmd(),
 		newMirrorCmd(),
+		newCleanCmd(),
 	)
 
 	return rootCmd.Execute()

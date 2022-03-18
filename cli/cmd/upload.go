@@ -68,12 +68,20 @@ func upload(ctx context.Context, dataDir string, tarFile string, batchID string)
 	// TODO: keep address for local metadata
 	// TODO: command to buy stamps and check if stamp they are usable
 	// --wait-usable-stamp (keep waiting until bought stamp is ready)
-	return uploadTarFile(ctx, tarPath, tarFile, api.UploadCollectionOptions{
+	addr, err := uploadTarFile(ctx, tarPath, tarFile, api.UploadCollectionOptions{
 		Pin:                 true,
 		BatchID:             batchID,
 		IndexDocumentHeader: "index.html",
 		ErrorDocumentHeader: "error.html",
 	})
+	if err != nil {
+		return swarm.Address{}, err
+	}
+
+	if optionClean {
+		cleanDatadir()
+	}
+	return addr, nil
 }
 
 // Upload Subcommands
@@ -101,12 +109,21 @@ func uploadAllFrom(ctx context.Context, dataDir string, kiwixMirror string, batc
 	filter := func(filename string) bool {
 		return strings.Contains(filename, kiwixMirror)
 	}
-	return uploadMatchTar(ctx, dataDir, filter, api.UploadCollectionOptions{
+
+	addrs, err := uploadMatchTar(ctx, dataDir, filter, api.UploadCollectionOptions{
 		Pin:                 true,
 		BatchID:             batchID,
 		IndexDocumentHeader: "index.html",
 		ErrorDocumentHeader: "error.html",
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	if optionClean {
+		cleanDatadir()
+	}
+	return addrs, nil
 }
 
 func uploadMatchTar(ctx context.Context, targetDir string, filter func(x string) bool, opts api.UploadCollectionOptions) (map[string]swarm.Address, error) {

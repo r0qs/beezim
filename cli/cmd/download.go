@@ -24,7 +24,7 @@ func newDownloadCmd() *cobra.Command {
 			return err
 		},
 	}
-	cmd.Flags().StringVar(&optionZimFile, optionNameZimFile, "", "path for the zim file")
+	cmd.Flags().StringVar(&optionZimFile, optionNameZimFile, "", "path to the zim file")
 	cmd.Flags().StringVar(&optionZimURL, optionZimURL, "", "download URL for the zim files")
 	// TODO: add download all option
 
