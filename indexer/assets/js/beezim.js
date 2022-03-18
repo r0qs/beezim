@@ -186,7 +186,7 @@ class BeeZIMSearcher {
 		const htmlContent = await asyncFetch("GET", url);
 		let tmp = document.createElement("DIV");
 		tmp.innerHTML = htmlContent;
-		let content = tmp.querySelectorAll("#content p");
+		let content = tmp.querySelectorAll("p");
 		let str = "";
 		content.forEach((c) => {
 			let cStyle = c.querySelector("style");
