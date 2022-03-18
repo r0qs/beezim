@@ -71,6 +71,14 @@ Flags:
 Use "beezim [command] --help" for more information about a command.
 ```
 
+
+![main page](/images/main-page.png)
+
+| Articles | List uploaded files | Files information | Search bar | Search Results |
+| -------- | ------------------- | ----------------- | ---------- | -------------- |
+| ![Articles](/images/article.png) | ![List Files](/images/files.png) | ![File Info](/images/files-open.png) | ![Search Bar](/images/search-bar.png) | ![Search Results](/images/search-results.png) |
+
+
 ### Configure the Bee environment
 
 Beezim uploads files to Swarm by connecting to a bee node.
