@@ -29,17 +29,6 @@ var assetsFS embed.FS
 //go:embed templates/*
 var templateFS embed.FS
 
-var assets []fs.DirEntry
-
-func init() {
-	var err error
-
-	assets, err = assetsFS.ReadDir("assets")
-	if err != nil {
-		log.Fatal("error parsing assets:", err)
-	}
-}
-
 type Article struct {
 	path  string
 	isDir bool
