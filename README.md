@@ -174,13 +174,16 @@ Please type `beezim mirror --help` to see the current available options.
 
 ```
 beezim mirror \
-  --url=https://download.kiwix.org/zim/wikipedia/wikipedia_en_100_mini_2022-03.zim
+  --url=https://download.kiwix.org/zim/wikipedia/wikipedia_en_100_mini_2022-03.zim \
+  --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685 \
+  --enable-search
 ```
 
 ```
 beezim mirror --kiwix=gutenberg \
   --zim=gutenberg_af_all_2022-03.zim \
-  --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
+  --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685 \
+  --enable-search
 ```
 
 ```
@@ -228,7 +231,7 @@ docker-compose run --rm \
 
 There is also a script to simplify a bit the above command when running BeeZIM with docker:
 ```
-./dc-beezim-cli mirror \
+./dc-beezim-cli.sh mirror \
   --zim=wikipedia_es_climate_change_mini_2022-02.zim \
   --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 \
   --enable-search
