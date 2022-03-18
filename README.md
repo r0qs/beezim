@@ -37,6 +37,14 @@ ZXS could also allow users to search contents without an internet connection,
 embedding the javascript search tool and the WebAssembly engine directly in the ZIM files.
 Although, this is not done yet!
 
+## Preview
+
+![main page](/images/main-page.png)
+
+| Articles | List uploaded files | Files information | Search bar | Search Results |
+| -------- | ------------------- | ----------------- | ---------- | -------------- |
+| ![Articles](/images/article.png) | ![List Files](/images/files.png) | ![File Info](/images/files-open.png) | ![Search Bar](/images/search-bar.png) | ![Search Results](/images/search-results.png) |
+
 ## How to run
 
 The current command-line tool has the following available commands:
@@ -70,14 +78,6 @@ Flags:
 
 Use "beezim [command] --help" for more information about a command.
 ```
-
-
-![main page](/images/main-page.png)
-
-| Articles | List uploaded files | Files information | Search bar | Search Results |
-| -------- | ------------------- | ----------------- | ---------- | -------------- |
-| ![Articles](/images/article.png) | ![List Files](/images/files.png) | ![File Info](/images/files-open.png) | ![Search Bar](/images/search-bar.png) | ![Search Results](/images/search-results.png) |
-
 
 ### Configure the Bee environment
 
