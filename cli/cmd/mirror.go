@@ -40,7 +40,7 @@ func newMirrorCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&optionZimFile, optionNameZimFile, "", "path for the zim file")
-	cmd.Flags().StringVar(&optionZimURL, optionZimURL, "", "download URL for the zim files")
+	cmd.Flags().StringVar(&optionZimURL, optionNameZimURL, "", "download URL for the zim files")
 
 	return cmd
 }
