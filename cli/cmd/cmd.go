@@ -29,9 +29,11 @@ var (
 	optionGasPrice       string
 	optionBeeApiUrl      string
 	optionBeeDebugApiUrl string
-	optionBatchID        string
-	optionBatchDepth     uint64
-	optionBatchAmount    int64
+	optionBeeBatchID     string
+	optionBeeBatchDepth  uint64
+	optionBeeBatchAmount int64
+	optionBeeTag         uint32
+	optionBeePin         bool
 	optionGatewayMode    bool
 	optionDataDir        string
 	optionClean          bool
@@ -47,9 +49,11 @@ const (
 	optionNameGasPrice       = "gas-price"
 	optionNameBeeApiUrl      = "bee-api-url"
 	optionNameBeeDebugApiUrl = "bee-debug-api-url"
-	optionNameBatchID        = "batch-id"
-	optionNameBatchDepth     = "batch-depth"
-	optionNameBatchAmount    = "batch-amount"
+	optionNameBeeBatchID     = "batch-id"
+	optionNameBeeBatchDepth  = "batch-depth"
+	optionNameBeeBatchAmount = "batch-amount"
+	optionNameBeeTag         = "tag"
+	optionNameBeePin         = "pin"
 	optionNameGatewayMode    = "gateway"
 	optionNameDataDir        = "datadir"
 	optionNameClean          = "clean"
@@ -75,9 +79,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&optionGasPrice, optionNameGasPrice, "", "gas price for postage stamps purchase")
 	rootCmd.PersistentFlags().StringVar(&optionBeeApiUrl, optionNameBeeApiUrl, os.Getenv("BEE_API_URL"), "bee api url")
 	rootCmd.PersistentFlags().StringVar(&optionBeeDebugApiUrl, optionNameBeeDebugApiUrl, os.Getenv("BEE_DEBUG_API_URL"), "bee debug api url")
-	rootCmd.PersistentFlags().StringVar(&optionBatchID, optionNameBatchID, "", "bee postage batch ID")
-	rootCmd.PersistentFlags().Uint64Var(&optionBatchDepth, optionNameBatchDepth, 30, "bee postage batch depth")
-	rootCmd.PersistentFlags().Int64Var(&optionBatchAmount, optionNameBatchAmount, 100000000, "bee postage batch amount")
+	rootCmd.PersistentFlags().StringVar(&optionBeeBatchID, optionNameBeeBatchID, "", "bee postage batch ID")
+	rootCmd.PersistentFlags().Uint64Var(&optionBeeBatchDepth, optionNameBeeBatchDepth, 30, "bee postage batch depth")
+	rootCmd.PersistentFlags().Int64Var(&optionBeeBatchAmount, optionNameBeeBatchAmount, 100000000, "bee postage batch amount")
+	rootCmd.PersistentFlags().Uint32Var(&optionBeeTag, optionNameBeeTag, 0, "bee tag UID to the attached to the uploaded data")
+	rootCmd.PersistentFlags().BoolVar(&optionBeePin, optionNameBeePin, false, "whether the uploaded data should be locally pinned on a node")
 	rootCmd.PersistentFlags().BoolVar(&optionGatewayMode, optionNameGatewayMode, false, fmt.Sprintf("connect to the swarm public gateway (default \"%s\")", os.Getenv("BEE_GATEWAY")))
 	rootCmd.PersistentFlags().StringVar(&optionDataDir, optionNameDataDir, "", "path to datadir directory (default \"./datadir\")")
 	rootCmd.PersistentFlags().BoolVar(&optionClean, optionNameClean, false, "delete all downloaded zim and generated tar files")

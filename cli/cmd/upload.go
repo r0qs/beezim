@@ -27,7 +27,7 @@ func newUploadCmd() *cobra.Command {
 			ctx, cancel := context.WithCancel(cmd.Context())
 			defer cancel()
 
-			addr, err := upload(ctx, optionDataDir, optionTarFile, optionBatchID)
+			addr, err := upload(ctx, optionDataDir, optionTarFile, optionBeeBatchID)
 			if err != nil {
 				return err
 			}
@@ -69,7 +69,8 @@ func upload(ctx context.Context, dataDir string, tarFile string, batchID string)
 	// TODO: command to buy stamps and check if stamp they are usable
 	// --wait-usable-stamp (keep waiting until bought stamp is ready)
 	addr, err := uploadTarFile(ctx, tarPath, tarFile, api.UploadCollectionOptions{
-		Pin:                 true,
+		Tag:                 optionBeeTag,
+		Pin:                 optionBeePin,
 		BatchID:             batchID,
 		IndexDocumentHeader: "index.html",
 		ErrorDocumentHeader: "error.html",
@@ -93,7 +94,7 @@ func newUploadAllCmd() *cobra.Command {
 			ctx, cancel := context.WithCancel(cmd.Context())
 			defer cancel()
 
-			addrs, err := uploadAllFrom(ctx, optionDataDir, optionKiwix, optionBatchID)
+			addrs, err := uploadAllFrom(ctx, optionDataDir, optionKiwix, optionBeeBatchID)
 			if err != nil {
 				return err
 			}
@@ -111,7 +112,8 @@ func uploadAllFrom(ctx context.Context, dataDir string, kiwixMirror string, batc
 	}
 
 	addrs, err := uploadMatchTar(ctx, dataDir, filter, api.UploadCollectionOptions{
-		Pin:                 true,
+		Tag:                 optionBeeTag,
+		Pin:                 optionBeePin,
 		BatchID:             batchID,
 		IndexDocumentHeader: "index.html",
 		ErrorDocumentHeader: "error.html",

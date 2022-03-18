@@ -30,7 +30,7 @@ func newMirrorCmd() *cobra.Command {
 
 			ext := filepath.Ext(zimFile)
 			tarFile := fmt.Sprintf("%s.tar", zimFile[:len(zimFile)-len(ext)])
-			addr, err := upload(ctx, optionDataDir, tarFile, optionBatchID)
+			addr, err := upload(ctx, optionDataDir, tarFile, optionBeeBatchID)
 			if err != nil {
 				return err
 			}
