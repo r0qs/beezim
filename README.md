@@ -90,21 +90,40 @@ Example using the gateway:
 beezim mirror --zim=wikipedia_cr_all_maxi_2022-02.zim --gateway
 ```
 
-For best experience and convenience it is recommended that you run your own bee node before try Beezim.
+For best experience and convenience it is recommended that you run your own bee node before try Beezim with bigger files.
 See [.env-example](.env-example) for an example of the necessary configuration parameters.
 Create a file named **.env** with configuration parameters for your system.
 
 ### Download ZIM files
 
+You can download zim files from the Kiwix mirror:
 ```
 beezim download \
   --kiwix=wikipedia \
   --zim=wikipedia_es_climate_change_mini_2022-02.zim 
 ```
 
-### Parse ZIM files and embed a search engine
+Or providing a url:
+```
+beezim download --url=https://download.kiwix.org/zim/wikipedia/wikipedia_es_climate_change_mini_2022-02.zim
+```
 
-This converts the zim files to tar archives and embed information to them (JS, CSS, HTML) and a search engine using the Xapian index.
+### Parse ZIM files
+
+#### Without embedded search engine and DApp
+
+This converts the zim files to tar archives and embed the minimal information to them (JS, CSS, HTML) required to
+upload a webpage on Swarm (i.e. `index.html` and `error.html`).
+The index page is automatically redirected to the main page of the ZIM if it exists.
+
+```
+beezim parse --zim=wikipedia_es_climate_change_mini_2022-02.zim
+```
+
+#### Embedding the search engine and BeeZIM DApp
+
+This performs the same operations as before but also adds a search engine using the Xapian index from the ZIM files
+and a DApp for search and navigate through the uploaded content.
 
 ```
 beezim parse \
@@ -112,19 +131,21 @@ beezim parse \
   --enable-search
 ```
 
-### Parse ZIM files without embedded search
-
-This converts the zim files to tar archives and embed information to them (JS, CSS, HTML).
-
-```
-beezim parse --zim=wikipedia_es_climate_change_mini_2022-02.zim
-```
-
 ### Upload the TAR to Swarm
 
+You can uploaded existent parsed ZIMs by using the `upload` command as below.
+
+#### Uploading to the public Swarm gateway
+
+*Be aware of the size limit!*
+
 ```
-beezim upload --tar=wikipedia_es_climate_change_mini_2022-02.tar --gateway
+beezim upload --tar=wikipedia_cr_all_maxi_2022-02.tar --gateway
 ```
+
+#### Uploading one or multiple files to local node
+
+*Please check the [.env-example](.env-example) for default ip:port configurations.*
 
 ```
 beezim upload \
@@ -137,6 +158,8 @@ beezim upload all \
   --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
 ```
 
+#### Filtering tars to be uploaded by keywords
+
 ```
 beezim upload --kiwix="gutenberg" all \
   --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
@@ -144,7 +167,15 @@ beezim upload --kiwix="gutenberg" all \
 
 ### Mirror
 
-Performs the download `->` parser `->` upload for one or many zims. (not finished yet)
+This is the default operation of BeeZIM.
+It performs the `download -> parser -> upload` tasks for one or many ZIMs.
+The command flags are similar to the other commands.
+Please type `beezim mirror --help` to see the current available options.
+
+```
+beezim mirror \
+  --url=https://download.kiwix.org/zim/wikipedia/wikipedia_en_100_mini_2022-03.zim
+```
 
 ```
 beezim mirror --kiwix=gutenberg \
