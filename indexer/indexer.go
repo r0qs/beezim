@@ -50,10 +50,11 @@ type IndexMetadata struct {
 }
 
 type SwarmZimIndexer struct {
-	mu      sync.Mutex
-	ZimPath string
-	Z       *zim.ZimReader
-	entries map[string]IndexEntry
+	mu           sync.Mutex
+	ZimPath      string
+	Z            *zim.ZimReader
+	entries      map[string]IndexEntry
+	enableSearch bool
 }
 
 // TODO: store root in a local kv db pointing to the metadata in swarm
@@ -64,16 +65,17 @@ type IndexEntry struct {
 	Metadata IndexMetadata
 }
 
-func New(zimPath string) (*SwarmZimIndexer, error) {
+func New(zimPath string, enableSearch bool) (*SwarmZimIndexer, error) {
 	z, err := zim.NewReader(zimPath, false)
 	if err != nil {
 		return nil, err
 	}
 
 	return &SwarmZimIndexer{
-		ZimPath: zimPath,
-		Z:       z,
-		entries: make(map[string]IndexEntry),
+		ZimPath:      zimPath,
+		Z:            z,
+		entries:      make(map[string]IndexEntry),
+		enableSearch: enableSearch,
 	}, nil
 }
 
@@ -101,6 +103,7 @@ func (idx *SwarmZimIndexer) ParseZIM() chan Article {
 
 		log.Printf("Parsing zim file: %s", filepath.Base(idx.ZimPath))
 		start := time.Now()
+		// TODO: improve performance for big files
 		idx.Z.ListTitlesPtrIterator(func(i uint32) {
 			a, err := idx.Z.ArticleAtURLIdx(i)
 			if err != nil || a.EntryType == zim.DeletedEntry {
@@ -108,58 +111,26 @@ func (idx *SwarmZimIndexer) ParseZIM() chan Article {
 			}
 
 			// FIXME: for now, all namespaces are considered equal when parsing
-			// https://openzim.org/wiki/ZIM_file_format
-			var data []byte
+			// https://openzim.org/wiki/ZIM_file_format and
+			// https://openzim.org/wiki/ZIM_file_format_old_namespace
+			//
+			// Namespaces:
+			// '-': Assets (CSS, JS, Favicon)
+			// 'A': Text files (Article Format)
+			// 'I': Media files
+			// 'M': ZIM Metadata
+			// 'X': Search indexes (Xapian DB)
 			switch a.Namespace {
-			case '-', // Assets (CSS, JS, Favicon)
-				'A', // Text files (Article Format)
-				'I', // Media files
-				'M', // ZIM Metadata
-				'X': // Search indexes (Xapian DB)
+			case '-', 'A', 'B', 'C', 'I', 'J', 'U', 'W':
+				// TODO: handle categories: https://openzim.org/wiki/Category_Handling
+				// TODO: handle well known entries: https://openzim.org/wiki/Well_known_entries
+				idx.preProcessing(a, zimArticles)
+			case 'M', 'X':
 				//FIXME: handle cases where the zim file was created without xapian
 				// https://github.com/openzim/libzim/blob/11258f9e624d5b288610b7dc6752b62a0af317c2/README.md#compilation
-
-				if a.EntryType == zim.RedirectEntry {
-					ridx, err := a.RedirectIndex()
-					if err != nil {
-						return
-					}
-
-					ra, err := idx.Z.ArticleAtURLIdx(ridx)
-					if err != nil {
-						return
-					}
-
-					buf, err := buildRedirectPage(path.Base(ra.FullURL()))
-					if err != nil {
-						log.Fatalf("error building redirect page: %v", err)
-					}
-					data = buf.Bytes()
-
-				} else {
-					data, err = a.Data()
-					if err != nil {
-						return
-					}
+				if idx.enableSearch {
+					idx.preProcessing(a, zimArticles)
 				}
-
-				dir, err := filepath.Rel(filepath.Dir(a.FullURL()), a.FullURL())
-				if err != nil {
-					return
-				}
-
-				zimArticles <- Article{
-					path:  a.FullURL(),
-					data:  data,
-					isDir: dir == ".",
-				}
-
-				idx.AddEntry(a.FullURL(), IndexMetadata{
-					Title:    a.Title,
-					MimeType: a.MimeType(),
-					Redirect: a.EntryType == zim.RedirectEntry,
-				})
-
 				// TODO: For now we are ignoring some cases, but we should create "_exceptions/" directory in case of errors extracting the files like is done by the zim-tools.
 				// https://github.com/openzim/zim-tools/blob/a26a450110e9ca2ec1b20de8237a3bd382af71f5/src/zimdump.cpp#L214
 			default:
@@ -171,6 +142,52 @@ func (idx *SwarmZimIndexer) ParseZIM() chan Article {
 		log.Printf("File processed in %v", elapsed)
 	}()
 	return zimArticles
+}
+
+func (idx *SwarmZimIndexer) preProcessing(article *zim.Article, zimArticles chan<- Article) {
+	var data []byte
+	var err error
+
+	if article.EntryType == zim.RedirectEntry {
+		ridx, err := article.RedirectIndex()
+		if err != nil {
+			return
+		}
+
+		ra, err := idx.Z.ArticleAtURLIdx(ridx)
+		if err != nil {
+			return
+		}
+
+		buf, err := buildRedirectPage(path.Base(ra.FullURL()))
+		if err != nil {
+			log.Fatalf("error building redirect page: %v", err)
+		}
+		data = buf.Bytes()
+
+	} else {
+		data, err = article.Data()
+		if err != nil {
+			return
+		}
+	}
+
+	dir, err := filepath.Rel(filepath.Dir(article.FullURL()), article.FullURL())
+	if err != nil {
+		return
+	}
+
+	zimArticles <- Article{
+		path:  article.FullURL(),
+		data:  data,
+		isDir: dir == ".",
+	}
+
+	idx.AddEntry(article.FullURL(), IndexMetadata{
+		Title:    article.Title,
+		MimeType: article.MimeType(),
+		Redirect: article.EntryType == zim.RedirectEntry,
+	})
 }
 
 func (idx *SwarmZimIndexer) UnZim(outputDir string, files <-chan Article) error {
@@ -216,7 +233,7 @@ func (idx *SwarmZimIndexer) TarZim(tarFile string, files <-chan Article) error {
 	for file := range files {
 		hdr := &tar.Header{
 			Name: file.path,
-			Mode: 0600,
+			Mode: 0644,
 			Size: int64(len(file.data)),
 		}
 
@@ -354,14 +371,18 @@ func groupDataByPrefix(idxEntries map[string]IndexEntry) map[string]*Node {
 		switch path.Dir(p)[0] {
 		case '-':
 			id = "Assets"
-		case 'A':
+		case 'A', 'C':
 			id = "Articles"
-		case 'I':
+		case 'B':
+			id = "Articles Metadata"
+		case 'I', 'J':
 			id = "Media"
 		case 'M':
 			id = "Metadata"
 		case 'X':
 			id = "Indexes"
+		default:
+			id = "Others" // TODO: handle categories: U,V,W
 		}
 
 		if _, ok := m[id]; !ok {

@@ -35,7 +35,7 @@ func parse(dataDir string, zimFile string) error {
 	zimPath := filepath.Join(dataDir, zimFile)
 	dirName := strings.TrimSuffix(filepath.Base(zimPath), ".zim")
 
-	sidx, err := indexer.New(zimPath)
+	sidx, err := indexer.New(zimPath, optionEnableSearch)
 	if err != nil {
 		return err
 	}
