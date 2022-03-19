@@ -31,7 +31,7 @@ The ZIM and/or tar files can be automatically deleted from the host machine afte
 The default behavior of Beezim is to `mirror` ZIMs to Swarm **without** append metadata or the search tool to it.
 However, if you would like to be able to search on the uploaded content in a similar fashion provided by [Kiwix](https://library.kiwix.org/), but without relying on server-side services or database, you can try out our search tool!
 
-Our search tool is called Zim Xapian Searchindex, or [zxs](https://github.com/r0qs/zxs) for short.
+Our search tool is hosted in another repository and is called [Zim Xapian Searchindex](https://github.com/r0qs/zxs), or ZXS for short.
 It is a WebAssembly library and javascript search tool that can read the indexes in the [Xapian](https://xapian.org/) format extracted from ZIM files under `X/fulltext/xapian` and `X/title/xapian`.
 
 ZXS enables the search of indexed data in your browser using the Xapian database that is [already embedded in the ZIM files]((https://wiki.openzim.org/wiki/Search_indexes)) without interacting with a server.
