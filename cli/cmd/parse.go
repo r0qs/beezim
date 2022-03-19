@@ -62,7 +62,7 @@ func parse(dataDir string, zimFile string) error {
 			}
 
 			// Append assets
-			if err := indexer.AddAssets(tarFile); err != nil {
+			if err := sidx.AddAssets(tarFile); err != nil {
 				return fmt.Errorf("Failed to copy assets directory to tar file %v", err)
 			}
 		} else {

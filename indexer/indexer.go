@@ -13,6 +13,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"sync"
 	"time"
@@ -21,6 +22,11 @@ import (
 
 	zim "github.com/akhenakh/gozim"
 	"github.com/cheggaaa/pb/v3"
+
+	"github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/css"
+	"github.com/tdewolff/minify/v2/html"
+	"github.com/tdewolff/minify/v2/js"
 )
 
 //go:embed assets/*
@@ -53,6 +59,7 @@ type SwarmZimIndexer struct {
 	mu           sync.Mutex
 	ZimPath      string
 	Z            *zim.ZimReader
+	minifier     *minify.M
 	entries      map[string]IndexEntry
 	enableSearch bool
 }
@@ -71,9 +78,15 @@ func New(zimPath string, enableSearch bool) (*SwarmZimIndexer, error) {
 		return nil, err
 	}
 
+	m := minify.New()
+	m.AddFunc("text/css", css.Minify)
+	m.AddFunc("text/html", html.Minify)
+	m.AddFuncRegexp(regexp.MustCompile("^(application|text)/(x-)?(java|ecma)script$"), js.Minify)
+
 	return &SwarmZimIndexer{
 		ZimPath:      zimPath,
 		Z:            z,
+		minifier:     m,
 		entries:      make(map[string]IndexEntry),
 		enableSearch: enableSearch,
 	}, nil
@@ -147,7 +160,7 @@ func (idx *SwarmZimIndexer) ParseZIM() chan Article {
 func (idx *SwarmZimIndexer) preProcessing(article *zim.Article, zimArticles chan<- Article) {
 	var data []byte
 	var err error
-
+	// TODO: minify everything that is possible while parsing
 	if article.EntryType == zim.RedirectEntry {
 		ridx, err := article.RedirectIndex()
 		if err != nil {
@@ -305,7 +318,7 @@ func (idx *SwarmZimIndexer) MakeRedirectIndexPage(tarFile string) error {
 }
 
 // parseTemplate parses a given template and replace content when requested
-func parseTemplate(contentTmpl string, data interface{}) (*bytes.Buffer, error) {
+func (idx *SwarmZimIndexer) parseTemplate(contentTmpl string, data interface{}) (*bytes.Buffer, error) {
 	baseTmpl, err := template.ParseFS(templateFS, "templates/page/*.html")
 	if err != nil {
 		return nil, fmt.Errorf("error parsing base templates: %v", err)
@@ -337,15 +350,20 @@ func parseTemplate(contentTmpl string, data interface{}) (*bytes.Buffer, error) 
 }
 
 // makePage creates a page with a given template data
-func makePage(name, template string, tmplData map[string]interface{}, tarFile string) error {
+func (idx *SwarmZimIndexer) makePage(name, template string, tmplData map[string]interface{}, tarFile string) error {
 	log.Printf("Appending %s page to %s", name, filepath.Base(tarFile))
 
-	buf, err := parseTemplate(template, tmplData)
+	buf, err := idx.parseTemplate(template, tmplData)
 	if err != nil {
 		return err
 	}
 
-	return tarball.AppendTarFile(tarFile, tarball.NewBufferFile(name, buf))
+	mdata, err := idx.minifier.Bytes("text/html", buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	return tarball.AppendTarFile(tarFile, tarball.NewBytesFile(name, mdata))
 }
 
 type Node struct {
@@ -419,12 +437,12 @@ func (idx *SwarmZimIndexer) MakeIndexSearchPage(tarFile string) error {
 	}
 
 	// make about's page using about template
-	if err = makePage("about.html", "about.html", tmplData, tarFile); err != nil {
+	if err = idx.makePage("about.html", "about.html", tmplData, tarFile); err != nil {
 		return err
 	}
 
 	// make browse files page using files template
-	if err = makePage("files.html", "files.html", tmplData, tarFile); err != nil {
+	if err = idx.makePage("files.html", "files.html", tmplData, tarFile); err != nil {
 		return err
 	}
 
@@ -436,12 +454,13 @@ func (idx *SwarmZimIndexer) MakeIndexSearchPage(tarFile string) error {
 	}
 
 	// make page for displaying search results
-	if err = makePage("searchresult.html", "searchresult.html", tmplData, tarFile); err != nil {
+	// TODO: move inline js to its own js file
+	if err = idx.makePage("searchresult.html", "searchresult.html", tmplData, tarFile); err != nil {
 		return err
 	}
 
 	// make index page using index-search template
-	return makePage("index.html", "index-search.html", tmplData, tarFile)
+	return idx.makePage("index.html", "index-search.html", tmplData, tarFile)
 }
 
 // MakeErrorPage creates an error page
@@ -451,10 +470,15 @@ func (idx *SwarmZimIndexer) MakeErrorPage(tarFile string) error {
 		return err
 	}
 
-	return tarball.AppendTarFile(tarFile, tarball.NewBytesFile("error.html", data))
+	mdata, err := idx.minifier.Bytes("text/html", data)
+	if err != nil {
+		return err
+	}
+
+	return tarball.AppendTarFile(tarFile, tarball.NewBytesFile("error.html", mdata))
 }
 
-func AddAssets(tarFile string) error {
+func (idx *SwarmZimIndexer) AddAssets(tarFile string) error {
 	log.Printf("Appending assets to %s", filepath.Base(tarFile))
 
 	return fs.WalkDir(assetsFS, ".", func(path string, d fs.DirEntry, err error) error {
@@ -469,6 +493,19 @@ func AddAssets(tarFile string) error {
 		data, err := fs.ReadFile(assetsFS, path)
 		if err != nil {
 			return err
+		}
+
+		switch filepath.Base(path) {
+		case "beezim.css":
+			data, err = idx.minifier.Bytes("text/css", data)
+			if err != nil {
+				return err
+			}
+		case "beezim.js":
+			data, err = idx.minifier.Bytes("text/javascript", data)
+			if err != nil {
+				return err
+			}
 		}
 
 		if err = tarball.AppendTarFile(tarFile, tarball.NewBytesFile(path, data)); err != nil {

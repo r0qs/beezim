@@ -9,6 +9,7 @@ require (
 	github.com/ethersphere/bee v1.4.3
 	github.com/joho/godotenv v1.4.0
 	github.com/spf13/cobra v1.0.0
+	github.com/tdewolff/minify/v2 v2.10.0
 	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e
 )
 
@@ -28,6 +29,7 @@ require (
 	github.com/remyoudompheng/go-liblzma v0.0.0-20190506200333-81bf2d431b96 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/tdewolff/parse/v2 v2.5.27 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912 // indirect
