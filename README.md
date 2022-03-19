@@ -9,6 +9,10 @@ The main purpose of Zim file format is to store websites content for offline usa
 
 Our goal is to use the zim files to mirror websites on decentralized storages like [Swarm](https://www.ethswarm.org/), providing censorship resistance to the websites that we love so much, like [Wikipedia](https://www.wikipedia.org/) and [Project Gutenberg](https://www.gutenberg.org/). We want to make a version of the [Internet Archive](https://archive.org/web/) that cannot be censored.
 
+## Demo
+
+Click [here](https://youtu.be/Zghp75DjnwM) to see a demo video of the main functionalities of BeeZIM.
+
 ## How it works
 
 Beezim is a command-line tool that uses the [Bee](https://github.com/ethersphere/bee) API to upload content on Swarm.
