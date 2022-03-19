@@ -82,7 +82,7 @@ Flags:
 Use "beezim [command] --help" for more information about a command.
 ```
 
-### Configure the Bee environment
+## Configure the Bee environment
 
 Beezim uploads files to Swarm by connecting to a bee node.
 But you can use the `--gateway` option to upload directly to the [public swarm gateway](https://gateway.ethswarm.org/).
@@ -97,9 +97,11 @@ For best experience and convenience it is recommended that you run your own bee 
 See [.env-example](.env-example) for an example of the necessary configuration parameters.
 Create a file named **.env** with configuration parameters for your system.
 
-### TL;DR
+## TL;DR
 
 Skip to [here](#using-docker-to-build-beezim), use our docker images and have fun!
+
+## Cli Commands
 
 ### Download ZIM files
 
