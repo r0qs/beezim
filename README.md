@@ -24,7 +24,7 @@ Beezim also embeds a navigation bar and webpages to display information about th
 
 The ZIM and/or tar files can be automatically deleted from the host machine after upload, using the option `--clean`.
 
-The default behavior of Beezim is to `mirror` ZIMs to Swarm as they are **without** append metadata or the search tool to it.
+The default behavior of Beezim is to `mirror` ZIMs to Swarm **without** append metadata or the search tool to it.
 However, if you would like to be able to search on the uploaded content in a similar fashion provided by [Kiwix](https://library.kiwix.org/), but without relying on server-side services or database, you can try out our search tool!
 
 Our search tool is called Zim Xapian Searchindex, or [zxs](https://github.com/r0qs/zxs) for short.
