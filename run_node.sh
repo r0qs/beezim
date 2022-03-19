@@ -15,9 +15,9 @@ run_dfs() {
     dfs server --dataDir=${bee_data_root}/dfs --beePort=1633
 }
 
-run_bee() {
+run_bee_test() {
     echo "Using swap endpoint: ${BEE_SWAP_ENDPOINT}"
-    [[ "$#" -ne 1 ]] && { echo "Usage : ./run_node -r NODE_ID"; exit 1; }
+    [[ "$#" -ne 1 ]] && { echo "Usage : ./run_node -test NODE_ID"; exit 1; }
     node=$1
     port=$(($node+15))
     api_port=${port}33
@@ -43,20 +43,26 @@ run_bee() {
         --swap-endpoint=${BEE_SWAP_ENDPOINT} \
         --cors-allowed-origins="*"
         # --cors-allowed-origins="http://localhost:8080,http://localhost:9090"
+}
 
+run_bee() {
+    echo "Starting bee node using config at: ${BEE_CONFIG}"
+    ${bee_path}/bee start --config=${BEE_CONFIG}
 }
 
 usage() {
     echo "usage: ${0} [option] NODE_ID"
     echo 'options:'
-    echo '	-f	runs a dfs node (depends on a bee node)'
-    echo '	-r	runs a bee node'
+    echo '	-dfs    runs a dfs node (depends on a bee node)'
+    echo '	-test   runs a bee node for local tests'
+    echo '	-fly	runs a bee node with given config'
     echo
 }
 
 option="${1}" 
 case ${option} in
-   -f) run_dfs;;
-   -r) run_bee ${@:2};;
+   -dfs) run_dfs;;
+   -test) run_bee_test ${@:2};;
+   -fly) run_bee;;
    *) usage; exit 1;;
 esac
