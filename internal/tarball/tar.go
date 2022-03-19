@@ -18,7 +18,7 @@ func AppendTarFile(tarFile string, file *File) error {
 	defer tf.Close()
 
 	// https://www.freebsd.org/cgi/man.cgi?query=tar&sektion=5
-	// A tar archive consists of a series	of 512-byte records.
+	// A tar archive consists of a series of 512-byte records.
 	// The end of the archive is indicated by two records consisting entirely of zero bytes.
 	// To append to it we start the write 1024 bytes before the end.
 	if _, err := tf.Seek(-1<<10, io.SeekEnd); err != nil {
@@ -28,7 +28,7 @@ func AppendTarFile(tarFile string, file *File) error {
 
 	hdr := &tar.Header{
 		Name: file.name,
-		Mode: 0600,
+		Mode: 0644,
 		Size: file.size,
 	}
 
