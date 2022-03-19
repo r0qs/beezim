@@ -56,12 +56,12 @@ Usage:
 
 Available Commands:
   clean       Clean files in datadir
-  download    download zim file
+  download    Download zim file
   help        Help about any command
-  list        Shows a list of compressed websites currently maintained by Kiwix
-  mirror      mirror kiwix zim repositories to swarm
-  parse       parse zim file
-  upload      upload zim file to swarm
+  list        Shows the list of compressed websites currently maintained by Kiwix
+  mirror      Mirror zim files to swarm
+  parse       Parse zim file [optionally embeding a search engine and reader/searcher DApp]
+  upload      Upload tar file to swarm
 
 Flags:
       --batch-amount int           bee postage batch amount (default 100000000)

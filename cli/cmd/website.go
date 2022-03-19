@@ -33,7 +33,7 @@ var zims = []string{
 
 var listWebCmd = &cobra.Command{
 	Use:   "list",
-	Short: "Shows a list of compressed websites currently maintained by Kiwix",
+	Short: "Shows the list of compressed websites currently maintained by Kiwix",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		printWebsiteList()

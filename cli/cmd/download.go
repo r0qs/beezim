@@ -18,7 +18,7 @@ func newDownloadCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "download",
-		Short: "download zim file",
+		Short: "Download zim file",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			_, err := download(optionDataDir, optionZimFile, optionZimURL)
 			return err

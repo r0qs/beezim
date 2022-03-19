@@ -13,7 +13,7 @@ import (
 func newParserCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "parse",
-		Short: "parse zim file",
+		Short: "Parse zim file [optionally embeding a search engine and reader/searcher DApp]",
 		Long:  "\nThe default behavior is to parse the ZIM and convert it to a tar file ready for upload.\nIf you only want to extract its content, use this command with the option --extract-only.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if optionZimFile != "" {

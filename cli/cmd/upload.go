@@ -18,7 +18,7 @@ import (
 func newUploadCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "upload",
-		Short: "upload zim file to swarm",
+		Short: "Upload tar file to swarm",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := checkTarFileName(optionTarFile); err != nil {
 				return err

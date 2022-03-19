@@ -12,7 +12,7 @@ import (
 func newMirrorCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "mirror",
-		Short: "mirror kiwix zim repositories to swarm",
+		Short: "Mirror zim files to swarm",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			zimPath, err := download(optionDataDir, optionZimFile, optionZimURL)
 			if err != nil {
