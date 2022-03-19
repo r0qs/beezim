@@ -1,13 +1,16 @@
 # BeeZIM Mirror Tool
 
+BeeZIM is a project made by Racin Nygaard and Rodrigo Q. Saramago for the We Are Millions hackathon in March 2022.
+
+The project's goal is to empower people with an easy-to-use Dapp to upload a copy of a website onto a decentralized storage platform such as [Swarm](https://www.ethswarm.org/). Websites copied onto Swarm are resistant to censorship and will be permanently available, even if the original source disappears. In this sense, our Dapp has similar ambitions as to [Internet Archive](https://archive.org/web/).
+
+In the first release of BeeZIM, we are able to create a perfect mirror of the original source, including all (front-end)scripts, stylesheets, redirects, and images. In most cases, an end-user will not be able to tell the difference between the BeeZIM mirror and the original source. In addition, BeeZIM embeds a powerful search engine, which allows users to find content that is more relevant to them. Often this is an enhancement to the original source, as many websites provide a poor or non-existing ability to search. Everything works locally in the user's browser without communicating with any other server.
+
+Thankfully to [OpenZIM Project](https://wiki.openzim.org/wiki/OpenZIM), which is currently maintained by a not-for-profit entity named [Kiwix](https://www.kiwix.org/en/), websites can be highly compressed into a single file and easily shared by users or viewed in devices with minimal computational resources. Kiwix distributes archives for [Wikipedia](https://www.wikipedia.org/), [Project Gutenberg](https://www.gutenberg.org/), [Stack Exchange](https://stackexchange.com/) and many more.
+
+The compressed files follow the [ZIM file format](https://wiki.openzim.org/wiki/ZIM_file_format), and according to Kiwix, the entire Wikipedia can be compressed in an 80GB zim file containing more than 6 million articles, with images!
+
 This repository provides tools to publish copies of entire websites on Swarm.
-
-Thankfully to [OpenZIM Project](https://wiki.openzim.org/wiki/OpenZIM), which is currently maintained by a not-for-profit entity named [Kiwix](https://www.kiwix.org/en/), websites can be highly compressed into a single file and easily shared by users or viewed in devices with very limited computational resources. 
-
-The compressed files follow the [ZIM file format](https://wiki.openzim.org/wiki/ZIM_file_format), and according to Kiwix the entire Wikipedia can be compressed in an 80Gb zim file, containing more than 6 million articles, with images!
-The main purpose of Zim file format is to store websites content for offline usage.
-
-Our goal is to use the zim files to mirror websites on decentralized storages like [Swarm](https://www.ethswarm.org/), providing censorship resistance to the websites that we love so much, like [Wikipedia](https://www.wikipedia.org/) and [Project Gutenberg](https://www.gutenberg.org/). We want to make a version of the [Internet Archive](https://archive.org/web/) that cannot be censored.
 
 ## Demo
 
