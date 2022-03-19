@@ -5,6 +5,7 @@ bin
 
 # dev
 bee_data_root
-datadir
+datadir/*
+!datadir/.gitkeep
 output
 notes
