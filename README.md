@@ -55,6 +55,7 @@ Usage:
   beezim [command]
 
 Available Commands:
+  clean       Clean files in datadir
   download    download zim file
   help        Help about any command
   list        Shows a list of compressed websites currently maintained by Kiwix
@@ -72,9 +73,11 @@ Flags:
       --datadir string             path to datadir directory (default "./datadir")
       --enable-search              enable search index
       --gas-price string           gas price for postage stamps purchase
-      --gateway                    connect to the swarm public gateway (default "https://gateway.ethswarm.org")
+      --gateway                    connect to the swarm public gateway (default "https://gateway-proxy-bee-0-0.gateway.ethswarm.org")
   -h, --help                       help for beezim
       --kiwix string               name of the compressed website hosted by Kiwix. Run "list" to see all available options (default "wikipedia")
+      --pin                        whether the uploaded data should be locally pinned on a node
+      --tag uint32                 bee tag UID to the attached to the uploaded data
 
 Use "beezim [command] --help" for more information about a command.
 ```
@@ -93,6 +96,10 @@ beezim mirror --zim=wikipedia_cr_all_maxi_2022-02.zim --gateway
 For best experience and convenience it is recommended that you run your own bee node before try Beezim with bigger files.
 See [.env-example](.env-example) for an example of the necessary configuration parameters.
 Create a file named **.env** with configuration parameters for your system.
+
+### TL;DR
+
+Skip to [here](#using-docker-to-build-beezim), use our docker images and have fun!
 
 ### Download ZIM files
 
@@ -198,6 +205,8 @@ beezim mirror --kiwix=others \
 
 ### Without search engine
 
+*Before start, make sure you have docker installed in your system.*
+
 If you don't plan to use the search engine and would like to mirror ZIMs as they are.
 You can just install BeeZIM in your machine and use it without the `--enable-search` option,
 or build the BeeZIM docker image (not the docker compose).
@@ -207,6 +216,8 @@ docker build -t beezim -f Dockerfile .
 ```
 
 ### With the Search Engine and Search DApp Tool
+
+*Before start, make sure you have docker and [docker-compose](https://github.com/docker/compose#where-to-get-docker-compose) installed in your system.*
 
 Our search DApp depends on [Zim Xapian Searchindex](https://github.com/r0qs/zxs), a WebAssembly library
 and javascript search tool that can read the search indexes extracted from ZIM files.
