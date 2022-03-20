@@ -28,7 +28,7 @@ func AppendTarFile(tarFile string, file *File) error {
 
 	hdr := &tar.Header{
 		Name: file.name,
-		Mode: 0600,
+		Mode: 0644,
 		Size: file.size,
 	}
 
@@ -41,6 +41,36 @@ func AppendTarFile(tarFile string, file *File) error {
 	}
 
 	return tw.Close()
+}
+
+// CopyTar copies a tar file from the reader and writes it to the writer
+func CopyTar(w io.Writer, tr *tar.Reader) error {
+	tw := tar.NewWriter(w)
+
+	for {
+		hdr, err := tr.Next()
+
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		if err := tw.WriteHeader(hdr); err != nil {
+			return err
+		}
+
+		if _, err := io.Copy(tw, tr); err != nil {
+			return err
+		}
+	}
+
+	if err := tw.Close(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ReadTarBuffer(tarFile string) (*bytes.Buffer, error) {

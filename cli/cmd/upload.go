@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"archive/tar"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -69,6 +71,7 @@ func upload(ctx context.Context, dataDir string, tarFile string, batchID string)
 	// TODO: command to buy stamps and check if stamp they are usable
 	// --wait-usable-stamp (keep waiting until bought stamp is ready)
 	addr, err := uploadTarFile(ctx, tarPath, tarFile, api.UploadCollectionOptions{
+		MimeType:            api.ContentTypeTar,
 		Tag:                 optionBeeTag,
 		Pin:                 optionBeePin,
 		BatchID:             batchID,
@@ -87,9 +90,9 @@ func upload(ctx context.Context, dataDir string, tarFile string, batchID string)
 
 // Upload Subcommands
 func newUploadAllCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "all",
-		Short: "upload all zim files to swarm of a specifc kiwix mirror",
+		Short: "Upload all tar files of a specifc kiwix mirror to swarm",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx, cancel := context.WithCancel(cmd.Context())
 			defer cancel()
@@ -104,6 +107,9 @@ func newUploadAllCmd() *cobra.Command {
 			return nil
 		},
 	}
+	cmd.MarkFlagRequired(optionKiwix)
+
+	return cmd
 }
 
 func uploadAllFrom(ctx context.Context, dataDir string, kiwixMirror string, batchID string) (map[string]swarm.Address, error) {
@@ -112,6 +118,7 @@ func uploadAllFrom(ctx context.Context, dataDir string, kiwixMirror string, batc
 	}
 
 	addrs, err := uploadMatchTar(ctx, dataDir, filter, api.UploadCollectionOptions{
+		MimeType:            api.ContentTypeTar,
 		Tag:                 optionBeeTag,
 		Pin:                 optionBeePin,
 		BatchID:             batchID,
@@ -153,14 +160,45 @@ func uploadMatchTar(ctx context.Context, targetDir string, filter func(x string)
 	return files, nil
 }
 
-func uploadTarFile(ctx context.Context, path string, name string, opts api.UploadCollectionOptions) (swarm.Address, error) {
-	buf, err := tarball.ReadTarBuffer(path)
+// TODO: make generic for any type of collection
+func uploadTarFile(ctx context.Context, path string, name string, opts api.UploadCollectionOptions) (addr swarm.Address, err error) {
+	f, err := os.Open(path)
 	if err != nil {
 		return swarm.Address{}, err
 	}
-	tarFile := tarball.NewBufferFile(name, buf)
-	if err := bee.UploadCollection(ctx, tarFile, opts); err != nil {
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
 		return swarm.Address{}, err
 	}
-	return tarFile.Address(), nil
+
+	header := fmt.Sprintf("Uploading tar file: %s", name)
+	progressBar := newNetProgressBar(header, int(info.Size()), false)
+	progressBar.Start()
+	defer progressBar.Finish()
+
+	r, w := io.Pipe()
+	done := make(chan error)
+	defer close(done)
+
+	go func() {
+		if addr, err = bee.UploadCollection(ctx, progressBar.NewProxyReader(r), info.Size(), opts); err != nil {
+			done <- err
+			return
+		}
+		done <- nil
+	}()
+
+	tr := tar.NewReader(f)
+	if err = tarball.CopyTar(w, tr); err != nil {
+		return swarm.Address{}, err
+	}
+
+	if err = w.Close(); err != nil {
+		return swarm.Address{}, err
+	}
+	err = <-done
+
+	return addr, err
 }
