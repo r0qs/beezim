@@ -8,7 +8,10 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"runtime/pprof"
+	"strings"
 
+	pb "github.com/cheggaaa/pb/v3"
 	"github.com/r0qs/beezim/internal/beeclient"
 
 	"github.com/joho/godotenv"
@@ -20,8 +23,11 @@ const (
 )
 
 var (
-	baseDir string
-	bee     *beeclient.BeeClient
+	baseDir      string
+	bee          *beeclient.BeeClient
+	cpuprofile   *os.File
+	memprofile   *os.File
+	blockprofile *os.File
 )
 
 var (
@@ -42,6 +48,9 @@ var (
 	optionTarFile        string
 	optionExtractOnly    bool
 	optionEnableSearch   bool
+	optionCPUProfile     string
+	optionMEMProfile     string
+	optionBlockProfile   string
 )
 
 const (
@@ -62,6 +71,9 @@ const (
 	optionNameTarFile        = "tar"
 	optionNameExtractOnly    = "extract-only"
 	optionNameEnableSearch   = "enable-search"
+	optionNameCPUProfile     = "cpuprofile"
+	optionNameMEMProfile     = "memprofile"
+	optionNameBlockProfile   = "blockprofile"
 )
 
 func init() {
@@ -88,6 +100,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&optionDataDir, optionNameDataDir, "", "path to datadir directory (default \"./datadir\")")
 	rootCmd.PersistentFlags().BoolVar(&optionClean, optionNameClean, false, "delete all downloaded zim and generated tar files")
 	rootCmd.PersistentFlags().BoolVar(&optionEnableSearch, optionNameEnableSearch, false, "enable search index")
+	rootCmd.PersistentFlags().StringVar(&optionCPUProfile, optionNameCPUProfile, "", "write cpu profile to file")
+	rootCmd.PersistentFlags().StringVar(&optionMEMProfile, optionNameMEMProfile, "", "write memory profile to file")
+	rootCmd.PersistentFlags().StringVar(&optionBlockProfile, optionNameBlockProfile, "", "write goroutines blocking profile to file")
 }
 
 var rootCmd = &cobra.Command{
@@ -106,7 +121,18 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
+		if optionCPUProfile != "" || optionMEMProfile != "" || optionBlockProfile != "" {
+			if err = startProfiling(); err != nil {
+				return err
+			}
+		}
+
 		return setDataDir()
+	},
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		if optionCPUProfile != "" || optionMEMProfile != "" || optionBlockProfile != "" {
+			stopProfiling()
+		}
 	},
 }
 
@@ -162,6 +188,70 @@ func NewBeeClient(beeApiUrl string, beeDebugApiUrl string) (*beeclient.BeeClient
 	}
 
 	return beeclient.NewBee(opts)
+}
+
+func newNetProgressBar(headerText string, size int, eta bool) *pb.ProgressBar {
+	var tmpl strings.Builder
+	tmpl.WriteString(`{{ string . "header" }} | {{ counters . }} {{ bar . "[" "=" ">" " " "]" }} {{ percent . }} {{ speed . }} `)
+
+	if eta {
+		tmpl.WriteString(`{{ rtime . "eta %s" }}`)
+	} else {
+		tmpl.WriteString(`{{ etime . }}`)
+	}
+
+	bar := pb.ProgressBarTemplate(tmpl.String()).New(size)
+	bar.Set("header", headerText)
+	return bar
+}
+
+func startProfiling() (err error) {
+	if optionCPUProfile != "" {
+		cpuprofile, err = os.Create(optionCPUProfile)
+		if err != nil {
+			return fmt.Errorf("could not create cpu profile: %v ", err)
+		}
+		if err := pprof.StartCPUProfile(cpuprofile); err != nil {
+			return fmt.Errorf("could not start cpu profile: %v ", err)
+		}
+	}
+
+	if optionMEMProfile != "" {
+		memprofile, err = os.Create(optionMEMProfile)
+		if err != nil {
+			return fmt.Errorf("could not create memory profile: %v ", err)
+		}
+	}
+
+	if optionBlockProfile != "" {
+		blockprofile, err = os.Create(optionBlockProfile)
+		if err != nil {
+			return fmt.Errorf("could not create block profile: %v ", err)
+		}
+		runtime.SetBlockProfileRate(1)
+	}
+	return nil
+}
+
+func stopProfiling() {
+	if cpuprofile != nil {
+		pprof.StopCPUProfile()
+		cpuprofile.Close()
+		cpuprofile = nil
+	}
+
+	if memprofile != nil {
+		pprof.Lookup("heap").WriteTo(memprofile, 0)
+		memprofile.Close()
+		memprofile = nil
+	}
+
+	if blockprofile != nil {
+		pprof.Lookup("block").WriteTo(blockprofile, 0)
+		blockprofile.Close()
+		blockprofile = nil
+		runtime.SetBlockProfileRate(0)
+	}
 }
 
 //TODO: Buy stamps
