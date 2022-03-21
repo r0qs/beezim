@@ -97,7 +97,7 @@ However the public gateway has a maximum upload limit of 10 MB per file.
 
 Example using the gateway:
 ```
-beezim mirror --zim=wikipedia_cr_all_maxi_2022-02.zim --gateway
+beezim-cli mirror --zim=wikipedia_cr_all_maxi_2022-02.zim --gateway
 ```
 
 For best experience and convenience it is recommended that you run your own bee node before try Beezim with bigger files.
@@ -174,14 +174,14 @@ There is also a script to simplify a bit the above command when running BeeZIM w
 
 You can download zim files from the Kiwix mirror:
 ```
-beezim download \
+beezim-cli download \
   --kiwix=wikipedia \
   --zim=wikipedia_es_climate_change_mini_2022-02.zim 
 ```
 
 Or providing a url:
 ```
-beezim download --url=https://download.kiwix.org/zim/wikipedia/wikipedia_es_climate_change_mini_2022-02.zim
+beezim-cli download --url=https://download.kiwix.org/zim/wikipedia/wikipedia_es_climate_change_mini_2022-02.zim
 ```
 
 ### Parse ZIM files
@@ -193,7 +193,7 @@ upload a webpage on Swarm (i.e. `index.html` and `error.html`).
 The index page is automatically redirected to the main page of the ZIM if it exists.
 
 ```
-beezim parse --zim=wikipedia_es_climate_change_mini_2022-02.zim
+beezim-cli parse --zim=wikipedia_es_climate_change_mini_2022-02.zim
 ```
 
 #### Embedding the search engine and BeeZIM DApp
@@ -202,7 +202,7 @@ This performs the same operations as before but also adds a search engine using 
 and a DApp for search and navigate through the uploaded content.
 
 ```
-beezim parse \
+beezim-cli parse \
   --zim=wikipedia_es_climate_change_mini_2022-02.zim \
   --enable-search
 ```
@@ -216,7 +216,7 @@ You can uploaded existent parsed ZIMs by using the `upload` command as below.
 *Be aware of the size limit!*
 
 ```
-beezim upload --tar=wikipedia_cr_all_maxi_2022-02.tar --gateway
+beezim-cli upload --tar=wikipedia_cr_all_maxi_2022-02.tar --gateway
 ```
 
 #### Uploading one or multiple files to local node
@@ -224,20 +224,20 @@ beezim upload --tar=wikipedia_cr_all_maxi_2022-02.tar --gateway
 *Please check the [.env-example](.env-example) for default ip:port configurations.*
 
 ```
-beezim upload \
+beezim-cli upload \
   --tar=wikipedia_es_climate_change_mini_2022-02.tar \
   --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
 ```
 
 ```
-beezim upload all \
+beezim-cli upload all \
   --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
 ```
 
 #### Filtering tars to be uploaded by keywords
 
 ```
-beezim upload --kiwix="gutenberg" all \
+beezim-cli upload --kiwix="gutenberg" all \
   --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685
 ```
 
@@ -249,21 +249,21 @@ The command flags are similar to the other commands.
 Please type `beezim mirror --help` to see the current available options.
 
 ```
-beezim mirror \
+beezim-cli mirror \
   --url=https://download.kiwix.org/zim/wikipedia/wikipedia_en_100_mini_2022-03.zim \
   --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685 \
   --enable-search
 ```
 
 ```
-beezim mirror --kiwix=gutenberg \
+beezim-cli mirror --kiwix=gutenberg \
   --zim=gutenberg_af_all_2022-03.zim \
   --batch-id=8e747b4aefe21a9c902337058f7aad71aa3170a9f399ece6f0bdb9f1ec432685 \
   --enable-search
 ```
 
 ```
-beezim mirror --kiwix=others \
+beezim-cli mirror --kiwix=others \
   --zim=alpinelinux_en_all_nopic_2021-03.zim \
   --bee-api-url=http://localhost:1733 \
   --bee-debug-api-url=http://localhost:1735 \
