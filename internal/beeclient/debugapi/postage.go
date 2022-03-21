@@ -21,14 +21,6 @@ import (
 	"github.com/ethersphere/bee/pkg/bigint"
 )
 
-type PostageService struct {
-	debugAPI *DebugAPI
-}
-
-func newPostageService(d *DebugAPI) *PostageService {
-	return &PostageService{debugAPI: d}
-}
-
 type postageResponse struct {
 	BatchID string `json:"batchID"`
 }
@@ -38,7 +30,7 @@ type PostageOptions struct {
 }
 
 // CreatePostageBatch sends a create postage request to a node that returns the bactchID
-func (ps *PostageService) CreatePostageBatch(ctx context.Context, amount int64, depth uint64, label string, o PostageOptions) (string, error) {
+func (d *DebugAPI) CreatePostageBatch(ctx context.Context, amount int64, depth uint64, label string, o PostageOptions) (string, error) {
 	h := http.Header{}
 
 	if o.GasPrice != "" {
@@ -47,7 +39,7 @@ func (ps *PostageService) CreatePostageBatch(ctx context.Context, amount int64, 
 
 	url := fmt.Sprintf("/stamps/%d/%d?label=%s", amount, depth, label)
 	var resp postageResponse
-	err := ps.debugAPI.C.RequestWithHeader(ctx, http.MethodPost, url, h, nil, &resp)
+	err := d.C.RequestWithHeader(ctx, http.MethodPost, url, h, nil, &resp)
 	if err != nil {
 		return "", err
 	}
@@ -73,9 +65,9 @@ type postageStampsResponse struct {
 }
 
 // Fetches the list postage stamp batches
-func (ps *PostageService) PostageBatches(ctx context.Context) ([]PostageStampResponse, error) {
+func (d *DebugAPI) PostageBatches(ctx context.Context) ([]PostageStampResponse, error) {
 	var resp postageStampsResponse
-	err := ps.debugAPI.C.Request(ctx, http.MethodGet, "/stamps", nil, &resp)
+	err := d.C.Request(ctx, http.MethodGet, "/stamps", nil, &resp)
 	if err != nil {
 		return nil, err
 	}

@@ -19,14 +19,6 @@ import (
 	"github.com/ethersphere/bee/pkg/swarm"
 )
 
-type NodeService struct {
-	debugAPI *DebugAPI
-}
-
-func newNodeService(d *DebugAPI) *NodeService {
-	return &NodeService{debugAPI: d}
-}
-
 type Addresses struct {
 	Ethereum     string        `json:"ethereum"`
 	Overlay      swarm.Address `json:"overlay"`
@@ -35,9 +27,9 @@ type Addresses struct {
 	PSSPublicKey string        `json:"pss_public_key"`
 }
 
-func (ns *NodeService) Addresses(ctx context.Context) (Addresses, error) {
+func (d *DebugAPI) Addresses(ctx context.Context) (Addresses, error) {
 	var resp Addresses
-	err := ns.debugAPI.C.RequestJSON(ctx, http.MethodGet, "/addresses", nil, &resp)
+	err := d.C.RequestJSON(ctx, http.MethodGet, "/addresses", nil, &resp)
 	return resp, err
 }
 
@@ -49,7 +41,7 @@ type Peers struct {
 	Peers []Peer `json:"peers"`
 }
 
-func (ns *NodeService) Peers(ctx context.Context) (resp Peers, err error) {
-	err = ns.debugAPI.C.RequestJSON(ctx, http.MethodGet, "/peers", nil, &resp)
+func (d *DebugAPI) Peers(ctx context.Context) (resp Peers, err error) {
+	err = d.C.RequestJSON(ctx, http.MethodGet, "/peers", nil, &resp)
 	return
 }

@@ -35,10 +35,7 @@ const (
 )
 
 type Api struct {
-	C     *httpclient.Client
-	Bytes *BytesService
-	Chunk *ChunkService
-	Dirs  *DirsService
+	C *httpclient.Client
 }
 
 func NewAPI(beeURL *url.URL, o *httpclient.ClientOptions) (*Api, error) {
@@ -46,11 +43,7 @@ func NewAPI(beeURL *url.URL, o *httpclient.ClientOptions) (*Api, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &Api{C: httpc}
-	a.Bytes = newBytesService(a)
-	a.Chunk = newChunkService(a)
-	a.Dirs = newDirsService(a)
-	return a, nil
+	return &Api{C: httpc}, nil
 }
 
 type UploadOptions struct {

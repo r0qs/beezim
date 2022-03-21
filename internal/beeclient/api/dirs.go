@@ -22,17 +22,9 @@ import (
 	"github.com/ethersphere/bee/pkg/swarm"
 )
 
-type DirsService struct {
-	api *Api
-}
-
-func newDirsService(a *Api) *DirsService {
-	return &DirsService{api: a}
-}
-
-// Download downloads data from the node
-func (ds *DirsService) Download(ctx context.Context, addr swarm.Address, path string) (resp io.ReadCloser, err error) {
-	return ds.api.C.RequestData(ctx, http.MethodGet, fmt.Sprintf("/bzz/%s/%s", addr.String(), path), nil)
+// DownloadCollection downloads data from the node
+func (a *Api) DownloadCollection(ctx context.Context, addr swarm.Address, path string) (resp io.ReadCloser, err error) {
+	return a.C.RequestData(ctx, http.MethodGet, fmt.Sprintf("/bzz/%s/%s", addr.String(), path), nil)
 }
 
 // DirsUploadResponse represents Upload's response
@@ -41,7 +33,7 @@ type DirsUploadResponse struct {
 }
 
 // UploadTar uploads collection to the node
-func (ds *DirsService) UploadCollection(ctx context.Context, data io.Reader, size int64, o UploadCollectionOptions) (DirsUploadResponse, error) {
+func (a *Api) UploadCollection(ctx context.Context, data io.Reader, size int64, o UploadCollectionOptions) (DirsUploadResponse, error) {
 	var resp DirsUploadResponse
 
 	header := make(http.Header)
@@ -72,6 +64,6 @@ func (ds *DirsService) UploadCollection(ctx context.Context, data io.Reader, siz
 		header.Set(SwarmTagHeader, strconv.FormatUint(uint64(o.Tag), 10))
 	}
 
-	err := ds.api.C.RequestWithHeader(ctx, http.MethodPost, "/bzz", header, data, &resp)
+	err := a.C.RequestWithHeader(ctx, http.MethodPost, "/bzz", header, data, &resp)
 	return resp, err
 }

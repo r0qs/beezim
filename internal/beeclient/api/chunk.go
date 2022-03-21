@@ -23,27 +23,19 @@ import (
 	"github.com/ethersphere/bee/pkg/swarm"
 )
 
-type ChunkService struct {
-	api *Api
-}
-
-func newChunkService(a *Api) *ChunkService {
-	return &ChunkService{api: a}
-}
-
-func (cs *ChunkService) Download(ctx context.Context, addr swarm.Address, targets ...string) (resp io.ReadCloser, err error) {
+func (a *Api) DownloadChunk(ctx context.Context, addr swarm.Address, targets ...string) (resp io.ReadCloser, err error) {
 	url := fmt.Sprintf("/chunks/%s", addr.String())
 	if len(targets) != 0 {
 		url = fmt.Sprintf("%s?targets=%s", url, strings.Join(targets, ","))
 	}
-	return cs.api.C.RequestData(ctx, http.MethodGet, url, nil)
+	return a.C.RequestData(ctx, http.MethodGet, url, nil)
 }
 
 type ChunksUploadResponse struct {
 	Reference swarm.Address `json:"reference"`
 }
 
-func (cs *ChunkService) Upload(ctx context.Context, data []byte, o UploadOptions) (ChunksUploadResponse, error) {
+func (a *Api) UploadChunk(ctx context.Context, data []byte, o UploadOptions) (ChunksUploadResponse, error) {
 	var resp ChunksUploadResponse
 
 	header := make(http.Header)
@@ -53,6 +45,6 @@ func (cs *ChunkService) Upload(ctx context.Context, data []byte, o UploadOptions
 	}
 	header.Add(SwarmPostageBatchIdHeader, o.BatchID)
 
-	err := cs.api.C.RequestWithHeader(ctx, http.MethodPost, "/chunks", header, bytes.NewReader(data), &resp)
+	err := a.C.RequestWithHeader(ctx, http.MethodPost, "/chunks", header, bytes.NewReader(data), &resp)
 	return resp, err
 }

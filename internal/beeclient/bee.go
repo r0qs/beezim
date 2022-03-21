@@ -74,26 +74,26 @@ func NewBee(opts ClientOptions) (c *BeeClient, err error) {
 }
 
 func (c *BeeClient) DownloadChunk(ctx context.Context, addr swarm.Address, targets ...string) (io.ReadCloser, error) {
-	return c.api.Chunk.Download(ctx, addr, targets...)
+	return c.api.DownloadChunk(ctx, addr, targets...)
 }
 
 func (c *BeeClient) UploadChunk(ctx context.Context, data []byte, o api.UploadOptions) (swarm.Address, error) {
-	resp, err := c.api.Chunk.Upload(ctx, data, o)
+	resp, err := c.api.UploadChunk(ctx, data, o)
 	return resp.Reference, err
 }
 
 func (c *BeeClient) DownloadBytes(ctx context.Context, addr swarm.Address) (io.ReadCloser, error) {
-	return c.api.Bytes.Download(ctx, addr)
+	return c.api.DownloadBytes(ctx, addr)
 }
 
 func (c *BeeClient) UploadBytes(ctx context.Context, data io.Reader, o api.UploadOptions) (swarm.Address, error) {
-	resp, err := c.api.Bytes.Upload(ctx, data, o)
+	resp, err := c.api.UploadBytes(ctx, data, o)
 	return resp.Reference, err
 }
 
 // UploadCollection uploads collection from a given reader
 func (c *BeeClient) UploadCollection(ctx context.Context, r io.Reader, size int64, o api.UploadCollectionOptions) (swarm.Address, error) {
-	resp, err := c.api.Dirs.UploadCollection(ctx, r, size, o)
+	resp, err := c.api.UploadCollection(ctx, r, size, o)
 	if err != nil {
 		return swarm.Address{}, fmt.Errorf("upload collection: %v", err)
 	}
@@ -102,7 +102,7 @@ func (c *BeeClient) UploadCollection(ctx context.Context, r io.Reader, size int6
 
 // DownloadManifestFile downloads manifest file from the node and returns it's size and hash
 func (c *BeeClient) DownloadManifestFile(ctx context.Context, addr swarm.Address, path string) (size int64, hash []byte, err error) {
-	r, err := c.api.Dirs.Download(ctx, addr, path)
+	r, err := c.api.DownloadCollection(ctx, addr, path)
 	if err != nil {
 		return 0, nil, fmt.Errorf("download manifest file %s: %w", path, err)
 	}
@@ -117,7 +117,7 @@ func (c *BeeClient) DownloadManifestFile(ctx context.Context, addr swarm.Address
 }
 
 func (c *BeeClient) DownloadManifestBytes(ctx context.Context, addr swarm.Address, path string) ([]byte, error) {
-	r, err := c.api.Dirs.Download(ctx, addr, path)
+	r, err := c.api.DownloadCollection(ctx, addr, path)
 	if err != nil {
 		return nil, fmt.Errorf("download manifest %s: %w", path, err)
 	}
@@ -132,7 +132,7 @@ func (c *BeeClient) DownloadManifestBytes(ctx context.Context, addr swarm.Addres
 }
 
 func (c *BeeClient) Addresses(ctx context.Context) (debugapi.Addresses, error) {
-	return c.debug.Node.Addresses(ctx)
+	return c.debug.Addresses(ctx)
 }
 
 // CreatePostageBatch returns the batchID of a batch of postage stamps
@@ -140,10 +140,10 @@ func (c *BeeClient) CreatePostageBatch(ctx context.Context, amount int64, depth 
 	if depth < MinimumBatchDepth {
 		depth = MinimumBatchDepth
 	}
-	return c.debug.Postage.CreatePostageBatch(ctx, amount, depth, label, o)
+	return c.debug.CreatePostageBatch(ctx, amount, depth, label, o)
 }
 
 // PostageBatches returns the list of batches of node
 func (c *BeeClient) PostageBatches(ctx context.Context) ([]debugapi.PostageStampResponse, error) {
-	return c.debug.Postage.PostageBatches(ctx)
+	return c.debug.PostageBatches(ctx)
 }

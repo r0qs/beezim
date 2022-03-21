@@ -21,17 +21,9 @@ import (
 	"github.com/ethersphere/bee/pkg/swarm"
 )
 
-type BytesService struct {
-	api *Api
-}
-
-func newBytesService(a *Api) *BytesService {
-	return &BytesService{api: a}
-}
-
 // Download downloads data from the node
-func (bs *BytesService) Download(ctx context.Context, addr swarm.Address) (resp io.ReadCloser, err error) {
-	return bs.api.C.RequestData(ctx, http.MethodGet, fmt.Sprintf("/bytes/%s", addr.String()), nil)
+func (a *Api) DownloadBytes(ctx context.Context, addr swarm.Address) (resp io.ReadCloser, err error) {
+	return a.C.RequestData(ctx, http.MethodGet, fmt.Sprintf("/bytes/%s", addr.String()), nil)
 }
 
 // BytesUploadResponse represents Upload's response
@@ -40,7 +32,7 @@ type BytesUploadResponse struct {
 }
 
 // Upload uploads bytes to the node
-func (bs *BytesService) Upload(ctx context.Context, data io.Reader, o UploadOptions) (BytesUploadResponse, error) {
+func (a *Api) UploadBytes(ctx context.Context, data io.Reader, o UploadOptions) (BytesUploadResponse, error) {
 	var resp BytesUploadResponse
 
 	header := make(http.Header)
@@ -48,6 +40,6 @@ func (bs *BytesService) Upload(ctx context.Context, data io.Reader, o UploadOpti
 	if o.Pin {
 		header.Add(SwarmPinHeader, "true")
 	}
-	err := bs.api.C.RequestWithHeader(ctx, http.MethodPost, "/bytes", header, data, &resp)
+	err := a.C.RequestWithHeader(ctx, http.MethodPost, "/bytes", header, data, &resp)
 	return resp, err
 }
