@@ -3,17 +3,19 @@ package indexer
 import (
 	"archive/tar"
 	"bytes"
-	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
 	"io/fs"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/r0qs/beezim/internal/tarball"
@@ -22,11 +24,14 @@ import (
 	"github.com/cheggaaa/pb/v3"
 )
 
-//go:embed assets/*
-var assetsFS embed.FS
+var templatesDir string
+var assetsDir string
 
-//go:embed templates/*
-var templateFS embed.FS
+func init() {
+	_, pwd, _, _ := runtime.Caller(0)
+	templatesDir = filepath.Join(filepath.Dir(pwd), "templates")
+	assetsDir = filepath.Join(filepath.Dir(pwd), "assets")
+}
 
 type Article struct {
 	path  string
@@ -273,7 +278,7 @@ func buildRedirectPage(pagePath string) (*bytes.Buffer, error) {
 		"Path": pagePath,
 	}
 
-	redirectTmpl, err := template.ParseFS(templateFS, "templates/index-redirect.html")
+	redirectTmpl, err := template.ParseFiles(filepath.Join(templatesDir, "index-redirect.html"))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing index redirect template: %v", err)
 	}
@@ -311,7 +316,7 @@ func (idx *SwarmZimIndexer) MakeRedirectIndexPage(tarFile string) error {
 
 // parseTemplate parses a given template and replace content when requested
 func parseTemplate(contentTmpl string, data interface{}) (*bytes.Buffer, error) {
-	baseTmpl, err := template.ParseFS(templateFS, "templates/page/*.html")
+	baseTmpl, err := template.ParseGlob(filepath.Join(templatesDir, "page/*.html"))
 	if err != nil {
 		return nil, fmt.Errorf("error parsing base templates: %v", err)
 	}
@@ -319,7 +324,7 @@ func parseTemplate(contentTmpl string, data interface{}) (*bytes.Buffer, error) 
 	// add dynamic content to pages
 	// FIXME: current we only support replace the content. Maybe we can improve that in the future do to something like Hugo does, or use Hugo instead.
 	if contentTmpl != "" {
-		tmpl, err := template.New("content").ParseFS(templateFS, fmt.Sprintf("templates/%s", contentTmpl))
+		tmpl, err := template.New("content").ParseFiles(filepath.Join(templatesDir, contentTmpl))
 		if err != nil {
 			return nil, err
 		}
@@ -451,7 +456,7 @@ func (idx *SwarmZimIndexer) MakeIndexSearchPage(tarFile string) error {
 
 // MakeErrorPage creates an error page
 func (idx *SwarmZimIndexer) MakeErrorPage(tarFile string) error {
-	data, err := fs.ReadFile(templateFS, "templates/error.html")
+	data, err := ioutil.ReadFile(filepath.Join(templatesDir, "error.html"))
 	if err != nil {
 		return err
 	}
@@ -462,7 +467,8 @@ func (idx *SwarmZimIndexer) MakeErrorPage(tarFile string) error {
 func AddAssets(tarFile string) error {
 	log.Printf("Appending assets to %s", filepath.Base(tarFile))
 
-	return fs.WalkDir(assetsFS, ".", func(path string, d fs.DirEntry, err error) error {
+	baseDir := filepath.Base(assetsDir)
+	return filepath.WalkDir(assetsDir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -471,12 +477,13 @@ func AddAssets(tarFile string) error {
 			return nil
 		}
 
-		data, err := fs.ReadFile(assetsFS, path)
+		data, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
 		}
 
-		if err = tarball.AppendTarFile(tarFile, tarball.NewBytesFile(path, data)); err != nil {
+		name := filepath.Join(baseDir, strings.TrimPrefix(path, assetsDir))
+		if err = tarball.AppendTarFile(tarFile, tarball.NewBytesFile(name, data)); err != nil {
 			return err
 		}
 
