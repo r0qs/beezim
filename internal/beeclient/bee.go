@@ -91,17 +91,13 @@ func (c *BeeClient) UploadBytes(ctx context.Context, data io.Reader, o api.Uploa
 	return resp.Reference, err
 }
 
-// UploadCollection uploads TAR collection bytes to the node
-func (c *BeeClient) UploadCollection(ctx context.Context, f *tarball.File, o api.UploadCollectionOptions) (err error) {
-	h := tarball.FileHasher()
-	r, err := c.api.Dirs.Upload(ctx, io.TeeReader(f.DataReader(), h), f.Size(), o)
+// UploadCollection uploads collection from a given reader
+func (c *BeeClient) UploadCollection(ctx context.Context, r io.Reader, size int64, o api.UploadCollectionOptions) (swarm.Address, error) {
+	resp, err := c.api.Dirs.UploadCollection(ctx, r, size, o)
 	if err != nil {
-		return fmt.Errorf("upload collection: %v", err)
+		return swarm.Address{}, fmt.Errorf("upload collection: %v", err)
 	}
-
-	f.SetAddress(r.Reference)
-	f.SetHash(h.Sum(nil))
-	return
+	return resp.Reference, nil
 }
 
 // DownloadManifestFile downloads manifest file from the node and returns it's size and hash

@@ -40,12 +40,17 @@ type DirsUploadResponse struct {
 	Reference swarm.Address `json:"reference"`
 }
 
-// Upload uploads TAR collection to the node
-func (ds *DirsService) Upload(ctx context.Context, data io.Reader, size int64, o UploadCollectionOptions) (DirsUploadResponse, error) {
+// UploadTar uploads collection to the node
+func (ds *DirsService) UploadCollection(ctx context.Context, data io.Reader, size int64, o UploadCollectionOptions) (DirsUploadResponse, error) {
 	var resp DirsUploadResponse
 
 	header := make(http.Header)
-	header.Set("Content-Type", "application/x-tar")
+	// Default to tar collection
+	if o.MimeType == "" {
+		header.Set("Content-Type", ContentTypeTar)
+	} else {
+		header.Set("Content-Type", o.MimeType)
+	}
 	header.Set("Content-Length", strconv.FormatInt(size, 10))
 	header.Set(SwarmCollectionHeader, "true")
 	header.Set(SwarmDeferredUploadHeader, "true")

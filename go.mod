@@ -5,7 +5,6 @@ go 1.17
 require (
 	github.com/akhenakh/gozim v0.0.0-20211220135114-45d8f5cbe57c
 	github.com/cheggaaa/pb/v3 v3.0.8
-	github.com/ethereum/go-ethereum v1.10.11
 	github.com/ethersphere/bee v1.4.3
 	github.com/joho/godotenv v1.4.0
 	github.com/spf13/cobra v1.0.0
@@ -29,6 +28,5 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210816183151-1e6c022a8912 // indirect
 )

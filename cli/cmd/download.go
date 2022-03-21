@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/cheggaaa/pb/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -79,7 +78,7 @@ func downloadZim(targetURL string, dstFile string) error {
 	defer dest.Close()
 
 	header := fmt.Sprintf("Downloading zim file: %s", filepath.Base(dstFile))
-	progressBar := newDownloadProgressBar(header, size)
+	progressBar := newNetProgressBar(header, size, true)
 	progressBar.Start()
 
 	io.Copy(dest, progressBar.NewProxyReader(resp.Body))
@@ -89,12 +88,4 @@ func downloadZim(targetURL string, dstFile string) error {
 	// TODO: use a proper logger and make log messages optional by level (info, debug, etc)
 	log.Printf("Zim file saved to: %s \n", dstFile)
 	return nil
-}
-
-func newDownloadProgressBar(headerText string, size int) *pb.ProgressBar {
-	tmpl := `{{ string . "header" }} | {{counters . }} {{ bar . "[" "=" ">" " " "]" }} {{ percent . }} {{speed . }} {{ rtime . "eta %s" }}`
-
-	bar := pb.ProgressBarTemplate(tmpl).New(size)
-	bar.Set("header", headerText)
-	return bar
 }

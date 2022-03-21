@@ -30,6 +30,8 @@ const (
 	SwarmCollectionHeader     = "Swarm-Collection"
 	SwarmPostageBatchIdHeader = "Swarm-Postage-Batch-Id"
 	SwarmDeferredUploadHeader = "Swarm-Deferred-Upload"
+	ContentTypeTar            = "application/x-tar"
+	MultiPartFormData         = "multipart/form-data"
 )
 
 type Api struct {
@@ -58,6 +60,7 @@ type UploadOptions struct {
 }
 
 type UploadCollectionOptions struct {
+	MimeType            string
 	Pin                 bool
 	Tag                 uint32
 	BatchID             string
