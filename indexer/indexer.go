@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/r0qs/beezim/internal/tarball"
 
@@ -93,16 +92,24 @@ func (idx *SwarmZimIndexer) Entries() map[string]IndexEntry {
 	return idx.entries
 }
 
+func (idx *SwarmZimIndexer) newZIMParserProgressBar() *pb.ProgressBar {
+	header := fmt.Sprintf("Parsing zim file: %s", filepath.Base(idx.ZimPath))
+
+	tmpl := `{{ string . "header" }} | {{counters . }} articles {{ bar . "[" "=" ">" " " "]" }}  {{ percent . }} {{ rtime . "eta %s" }}`
+
+	bar := pb.ProgressBarTemplate(tmpl).New(int(idx.Z.ArticleCount))
+	bar.Set("header", header)
+
+	return bar
+}
+
 func (idx *SwarmZimIndexer) ParseZIM() chan Article {
 	zimArticles := make(chan Article)
 	go func() {
 		defer close(zimArticles)
-		progressBar := pb.New(int(idx.Z.ArticleCount))
-		progressBar.Set(pb.Bytes, true)
+		progressBar := idx.newZIMParserProgressBar()
 		progressBar.Start()
 
-		log.Printf("Parsing zim file: %s", filepath.Base(idx.ZimPath))
-		start := time.Now()
 		// TODO: improve performance for big files
 		idx.Z.ListTitlesPtrIterator(func(i uint32) {
 			a, err := idx.Z.ArticleAtURLIdx(i)
@@ -138,8 +145,6 @@ func (idx *SwarmZimIndexer) ParseZIM() chan Article {
 			progressBar.Increment()
 		})
 		progressBar.Finish()
-		elapsed := time.Since(start)
-		log.Printf("File processed in %v", elapsed)
 	}()
 	return zimArticles
 }

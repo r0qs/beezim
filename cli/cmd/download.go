@@ -25,7 +25,7 @@ func newDownloadCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&optionZimFile, optionNameZimFile, "", "path to the zim file")
-	cmd.Flags().StringVar(&optionZimURL, optionZimURL, "", "download URL for the zim files")
+	cmd.Flags().StringVar(&optionZimURL, optionNameZimURL, "", "download URL for the zim files")
 	// TODO: add download all option
 
 	return cmd
@@ -67,7 +67,6 @@ func downloadZim(targetURL string, dstFile string) error {
 		return fmt.Errorf("download failed: %v [status: %v]\n", targetURL, resp.Status)
 	}
 
-	log.Printf("Downloading zim file to: %v\n", filepath.Base(dstFile))
 	size, err := strconv.Atoi(resp.Header.Get("Content-Length"))
 	if err != nil {
 		return err
@@ -79,13 +78,23 @@ func downloadZim(targetURL string, dstFile string) error {
 	}
 	defer dest.Close()
 
-	progressBar := pb.Full.New(int(size))
+	header := fmt.Sprintf("Downloading zim file: %s", filepath.Base(dstFile))
+	progressBar := newDownloadProgressBar(header, size)
 	progressBar.Start()
 
 	io.Copy(dest, progressBar.NewProxyReader(resp.Body))
 
 	progressBar.Finish()
 
+	// TODO: use a proper logger and make log messages optional by level (info, debug, etc)
 	log.Printf("Zim file saved to: %s \n", dstFile)
 	return nil
+}
+
+func newDownloadProgressBar(headerText string, size int) *pb.ProgressBar {
+	tmpl := `{{ string . "header" }} | {{counters . }} {{ bar . "[" "=" ">" " " "]" }} {{ percent . }} {{speed . }} {{ rtime . "eta %s" }}`
+
+	bar := pb.ProgressBarTemplate(tmpl).New(size)
+	bar.Set("header", headerText)
+	return bar
 }
