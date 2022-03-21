@@ -104,9 +104,69 @@ For best experience and convenience it is recommended that you run your own bee 
 See [.env-example](.env-example) for an example of the necessary configuration parameters.
 Create a file named **.env** with configuration parameters for your system.
 
-## TL;DR
+## Build from source
 
-Skip to [here](#using-docker-to-build-beezim), use our docker images and have fun!
+```
+make
+./bin/beezim-cli --help
+```
+
+## Using Docker to Build BeeZIM
+
+### Without search engine
+
+*Before start, make sure you have docker installed in your system.*
+
+If you don't plan to use the search engine and would like to mirror ZIMs as they are.
+You can just install BeeZIM in your machine and use it without the `--enable-search` option,
+or build the BeeZIM docker image (not the docker compose).
+
+```
+docker build -t beezim -f Dockerfile .
+```
+
+```
+docker run -it --rm --name beezim-cli-0 \
+        --user $(id -u):$(id -g) \
+        --mount "type=bind,src=$(pwd)/.env,dst=/src/.env,readonly" \
+        --mount "type=bind,src=$(pwd)/datadir,dst=/src/datadir" \
+        --mount "type=bind,src=$(pwd)/indexer/assets/js/xapian,dst=/src/xapian" \
+        --network="host" \
+        beezim ./bin/beezim-cli mirror --zim=wikipedia_es_climate_change_mini_2022-02.zim --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 --enable-search
+```
+
+### With the Search Engine and Search DApp Tool
+
+*Before start, make sure you have docker and [docker-compose](https://github.com/docker/compose#where-to-get-docker-compose) installed in your system.*
+
+Our search DApp depends on [Zim Xapian Searchindex](https://github.com/r0qs/zxs), a WebAssembly library
+and javascript search tool that can read the search indexes extracted from ZIM files.
+
+We also provide a `docker-compose.yml` to download the ZXS image and build Beezim in your local machine.
+You can use it running the command below:
+
+```
+docker-compose -f docker-compose.yml up --build --remove-orphans && docker-compose rm -fsv
+```
+
+```
+docker-compose run --rm \
+  --user $(id -u):$(id -g) \
+  beezim ./bin/beezim-cli mirror \
+  --zim=wikipedia_es_climate_change_mini_2022-02.zim \
+  --bee-api-url=http://localhost:1633 \
+  --bee-debug-api-url=http://localhost:1635 \
+  --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 \
+  --enable-search
+```
+
+There is also a script to simplify a bit the above command when running BeeZIM with docker:
+```
+./dc-beezim-cli.sh mirror \
+  --zim=wikipedia_es_climate_change_mini_2022-02.zim \
+  --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 \
+  --enable-search
+```
 
 ## Cli Commands
 
@@ -208,51 +268,4 @@ beezim mirror --kiwix=others \
   --bee-api-url=http://localhost:1733 \
   --bee-debug-api-url=http://localhost:1735 \
   --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0
-```
-
-## Using Docker to Build BeeZIM
-
-### Without search engine
-
-*Before start, make sure you have docker installed in your system.*
-
-If you don't plan to use the search engine and would like to mirror ZIMs as they are.
-You can just install BeeZIM in your machine and use it without the `--enable-search` option,
-or build the BeeZIM docker image (not the docker compose).
-
-```
-docker build -t beezim -f Dockerfile .
-```
-
-### With the Search Engine and Search DApp Tool
-
-*Before start, make sure you have docker and [docker-compose](https://github.com/docker/compose#where-to-get-docker-compose) installed in your system.*
-
-Our search DApp depends on [Zim Xapian Searchindex](https://github.com/r0qs/zxs), a WebAssembly library
-and javascript search tool that can read the search indexes extracted from ZIM files.
-
-We also provide a `docker-compose.yml` to download the ZXS image and build Beezim in your local machine.
-You can use it running the command below:
-
-```
-docker-compose -f docker-compose.yml up --build --remove-orphans && docker-compose rm -fsv
-```
-
-```
-docker-compose run --rm \
-  --user $(id -u):$(id -g) \
-  beezim ./bin/beezim-cli mirror \
-  --zim=wikipedia_es_climate_change_mini_2022-02.zim \
-  --bee-api-url=http://localhost:1633 \
-  --bee-debug-api-url=http://localhost:1635 \
-  --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 \
-  --enable-search
-```
-
-There is also a script to simplify a bit the above command when running BeeZIM with docker:
-```
-./dc-beezim-cli.sh mirror \
-  --zim=wikipedia_es_climate_change_mini_2022-02.zim \
-  --batch-id=388b9a93fc084d350b2320bedacb3a88779867d956b20a2716512138bc88eac0 \
-  --enable-search
 ```
