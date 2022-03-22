@@ -179,26 +179,13 @@ func uploadTarFile(ctx context.Context, path string, name string, opts api.Uploa
 	defer progressBar.Finish()
 
 	r, w := io.Pipe()
-	done := make(chan error)
-	defer close(done)
-
 	go func() {
-		if addr, err = bee.UploadCollection(ctx, progressBar.NewProxyReader(r), info.Size(), opts); err != nil {
-			done <- err
-			return
+		defer w.Close()
+		tr := tar.NewReader(f)
+		if err = tarball.CopyTar(w, tr); err != nil {
+			log.Fatal(err)
 		}
-		done <- nil
 	}()
 
-	tr := tar.NewReader(f)
-	if err = tarball.CopyTar(w, tr); err != nil {
-		return swarm.Address{}, err
-	}
-
-	if err = w.Close(); err != nil {
-		return swarm.Address{}, err
-	}
-	err = <-done
-
-	return addr, err
+	return bee.UploadCollection(ctx, progressBar.NewProxyReader(r), info.Size(), opts)
 }
