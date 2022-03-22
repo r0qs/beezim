@@ -176,6 +176,8 @@ func (idx *SwarmZimIndexer) preProcessing(article *zim.Article, zimArticles chan
 		data = buf.Bytes()
 
 	} else {
+		// FIXME:This is critical since it reads the article content to a buffer.
+		// We should instead modify gozim to return a reader and pass it directly to the TarZim.
 		data, err = article.Data()
 		if err != nil {
 			return

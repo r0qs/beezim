@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// AppendTarFile appends a file to the given tar
 func AppendTarFile(tarFile string, file *File) error {
 	tf, err := os.OpenFile(tarFile, os.O_RDWR, os.ModePerm)
 	if err != nil {
@@ -73,6 +74,8 @@ func CopyTar(w io.Writer, tr *tar.Reader) error {
 	return nil
 }
 
+// ReadTarBuffer reads a tar to a buffer. Please be aware that it will load
+// the whole tar file into the memory. Thus, do not use it for big tar files.
 func ReadTarBuffer(tarFile string) (*bytes.Buffer, error) {
 	f, err := os.Open(tarFile)
 	if err != nil {
@@ -108,6 +111,7 @@ func ReadTarBuffer(tarFile string) (*bytes.Buffer, error) {
 	return &buf, nil
 }
 
+// Untar extracts a tar into targetDir
 func Untar(tarFile string, targetDir string) error {
 	reader, err := os.Open(tarFile)
 	if err != nil {
@@ -150,6 +154,7 @@ func Untar(tarFile string, targetDir string) error {
 	return nil
 }
 
+// Tar creates a tar archive into one directory before sourceDir
 func Tar(sourceDir string, tarFile string) error {
 	if filepath.Ext(tarFile) != ".tar" {
 		return errors.New("target tar file must have \".tar\" extention")
